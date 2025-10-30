@@ -18,18 +18,12 @@ $julia\
 $nodejs\
 $nim\
 $rust\
-[](fg:#86BBD8 bg:#144563)\
+[](fg:#86BBD8 bg:#06969A)\
 $docker_context\
-[ ](fg:#144563)\
+[](fg:#06969A bg:#33658A)\
+[ ](fg:#33658A)\
 $time\
 """
-
-# This options were removed from the original design
-#after docker context:
-#[](fg:#06969A bg:#33658A)\
-#after time:
-#[ ](fg:#33658A)\
-
 
 command_timeout = 5000
 # Disable the blank line at the start of the prompt
