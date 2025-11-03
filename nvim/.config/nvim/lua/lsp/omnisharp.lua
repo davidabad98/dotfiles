@@ -1,0 +1,29 @@
+-- lua/lsp/omnisharp.lua
+local util = require("lspconfig.util")
+
+return {
+  -- filetypes for this server
+  filetypes = { "cs", "csharp" },
+
+  -- Better root detection (use .sln/.csproj/git)
+  root_dir = function(fname)
+    return util.root_pattern(".sln", ".csproj", ".git")(fname) or util.path.dirname(fname)
+  end,
+
+  -- Command used when omnisharp is on PATH (mason should install it)
+  -- hostPID helps omnisharp work reliably with Neovim
+  cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
+
+  -- Optional settings for OmniSharp
+  settings = {
+    omnisharp = {
+      useModernNet = true,               -- prefer modern .NET if available
+      enableEditorConfigSupport = true,
+      organizeImportsOnFormat = true,
+      enableRoslynAnalyzers = true,
+    }
+  },
+
+  -- you can override on_attach/capabilities here if you need
+}
+
