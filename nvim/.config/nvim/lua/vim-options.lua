@@ -90,3 +90,11 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufWritePre" }, {
   pattern = "*",
   command = "set ff=unix",
 })
+
+-- ========== Diagnostics ==========
+vim.o.updatetime = 250 -- 0.25 seconds idle time before CursorHold triggers
+vim.api.nvim_create_autocmd("CursorHold", {
+  callback = function()
+    vim.diagnostic.open_float(nil, { focus = false })
+  end,
+})

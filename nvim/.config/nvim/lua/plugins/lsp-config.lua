@@ -13,7 +13,7 @@ return {
     "williamboman/mason-lspconfig.nvim",
     config = function()
       -- list servers you want installed / enabled
-      local servers = { "lua_ls", "pyright" }  -- add more as needed "omnisharp" 
+      local servers = { "lua_ls", "pyright", "omnisharp"  }  -- add more as needed "omnisharp" 
 
       -- install servers via mason
       require("mason-lspconfig").setup({
