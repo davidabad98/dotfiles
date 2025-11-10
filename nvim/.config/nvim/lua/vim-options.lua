@@ -106,7 +106,24 @@ vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { noremap = true, silent = true })
 vim.keymap.set("i", "<C-c>", "<Esc>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "Q", "<nop>")
-vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
+
+-- Open the tmux sessionizer from inside Neovim
+-- NOTE: requires tmux; inside tmux it opens a popup, outside it spawns a new tmux session/window
+local sessionizer = vim.fn.expand("~/.local/bin/tmux-sessionizer")
+
+vim.keymap.set("n", "<C-f>", function()
+	if vim.fn.filereadable(sessionizer) == 0 then
+		vim.notify("tmux-sessionizer not found at " .. sessionizer, vim.log.levels.ERROR)
+		return
+	end
+	-- Run it inside a new tmux window if we're already in tmux
+	if vim.env.TMUX then
+		vim.fn.jobstart({ "tmux", "display-popup", "-E", sessionizer }, { detach = true })
+	else
+		-- not in tmux: run it directly (it will create/attach a session)
+		vim.fn.jobstart({ sessionizer }, { detach = true })
+	end
+end, { noremap = true, silent = true, desc = "Project switcher (tmux sessionizer)" })
 
 -- Show hidden characters (good for debugging indentation)
 vim.opt.list = true
@@ -144,5 +161,5 @@ vim.api.nvim_create_autocmd("CursorHold", {
 })
 
 -- ========== Design ==========
-vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
-vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+-- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+-- vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
