@@ -60,26 +60,26 @@ vim.keymap.set("n", "<C-j>", ":cnext<CR>", { desc = "Quickfix Next" })
 vim.keymap.set("n", "<C-k>", ":cprev<CR>", { desc = "Quickfix Prev" })
 
 -- helpers to toggle qf/loclist windows
-local function is_open(kind)
-	for _, win in ipairs(vim.fn.getwininfo()) do
-		if kind == "qf" and win.quickfix == 1 then
-			return true
-		end
-		if kind == "loc" and win.loclist == 1 then
-			return true
-		end
-	end
-	return false
-end
-
-local function toggle_qf()
-	if is_open("qf") then
-		vim.cmd.cclose()
-	else
-		vim.cmd.copen()
-	end
-end
-vim.keymap.set("n", "<leader>cq", toggle_qf, { desc = "Quickfix Toggle" })
+-- local function is_open(kind)
+-- 	for _, win in ipairs(vim.fn.getwininfo()) do
+-- 		if kind == "qf" and win.quickfix == 1 then
+-- 			return true
+-- 		end
+-- 		if kind == "loc" and win.loclist == 1 then
+-- 			return true
+-- 		end
+-- 	end
+-- 	return false
+-- end
+--
+-- local function toggle_qf()
+-- 	if is_open("qf") then
+-- 		vim.cmd.cclose()
+-- 	else
+-- 		vim.cmd.copen()
+-- 	end
+-- end
+-- vim.keymap.set("n", "<leader>cq", toggle_qf, { desc = "Quickfix Toggle" })
 
 -- ========== Developer Essentials ==========
 
@@ -91,6 +91,9 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz", { noremap = true, silent = true })
 vim.keymap.set("n", "n", "nzzzv", { noremap = true, silent = true })
 vim.keymap.set("n", "N", "Nzzzv", { noremap = true, silent = true })
 
+-- Leave cursor where it is when appending a line
+vim.keymap.set("n", "J", "mzJ`z", { noremap = true, silent = true })
+
 -- Stay in visual mode while indenting
 vim.keymap.set("v", "<", "<gv", { noremap = true, silent = true })
 vim.keymap.set("v", ">", ">gv", { noremap = true, silent = true })
@@ -98,6 +101,12 @@ vim.keymap.set("v", ">", ">gv", { noremap = true, silent = true })
 -- Move selected lines while staying in visual mode
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { noremap = true, silent = true })
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { noremap = true, silent = true })
+
+-- Enable save in vertical insert mode
+vim.keymap.set("i", "<C-c>", "<Esc>", { noremap = true, silent = true })
+
+vim.keymap.set("n", "Q", "<nop>")
+vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 
 -- Show hidden characters (good for debugging indentation)
 vim.opt.list = true
@@ -117,9 +126,23 @@ vim.keymap.set("x", "<leader>p", '"_dP', { noremap = true, silent = true })
 -- })
 
 -- ========== Diagnostics ==========
-vim.o.updatetime = 250 -- 0.25 seconds idle time before CursorHold triggers
+vim.o.updatetime = 50 -- 0.05 seconds idle time before CursorHold triggers
+
+-- configure diagnostic display
+vim.diagnostic.config({
+	-- virtual_text = false, -- disable inline text
+	-- signs = true,
+	-- underline = true,
+	-- update_in_insert = false,
+	severity_sort = true,
+})
+
 vim.api.nvim_create_autocmd("CursorHold", {
 	callback = function()
 		vim.diagnostic.open_float(nil, { focus = false })
 	end,
 })
+
+-- ========== Design ==========
+vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })

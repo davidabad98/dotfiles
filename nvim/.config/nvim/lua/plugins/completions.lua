@@ -20,10 +20,14 @@ return {
 						luasnip.lsp_expand(args.body)
 					end,
 				},
+				window = {
+					-- completion = cmp.config.window.bordered(),
+					documentation = cmp.config.window.bordered(),
+				},
 				mapping = cmp.mapping.preset.insert({
 					-- ["<C-b>"] = cmp.mapping.scroll_docs(-4),
 					-- ["<C-f>"] = cmp.mapping.scroll_docs(4),
-					["<S-Space>"] = cmp.mapping.complete(),
+					["<C-l>"] = cmp.mapping.complete(), -- manual trigger (instead of <C-Space>)
 					["<C-e>"] = cmp.mapping.abort(),
 					["<CR>"] = cmp.mapping.confirm({ select = true }),
 					["<Tab>"] = cmp.mapping(function(fb)
