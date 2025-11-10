@@ -125,6 +125,8 @@ vim.keymap.set("n", "<C-f>", function()
 	end
 end, { noremap = true, silent = true, desc = "Project switcher (tmux sessionizer)" })
 
+vim.keymap.set("n", "<leader>H", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+
 -- Show hidden characters (good for debugging indentation)
 vim.opt.list = true
 vim.opt.listchars = { tab = "→ ", trail = "·", nbsp = "␣" }

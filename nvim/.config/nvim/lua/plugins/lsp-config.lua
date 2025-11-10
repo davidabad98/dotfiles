@@ -34,6 +34,7 @@ return {
 				vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
 				vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
 				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, bufopts)
+				vim.keymap.set("n", "<leader>rr", vim.lsp.buf.references, bufopts)
 				vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, bufopts)
 				-- format on save if supported
 			end
