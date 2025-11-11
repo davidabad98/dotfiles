@@ -116,13 +116,13 @@ vim.keymap.set("n", "<C-f>", function()
 		vim.notify("tmux-sessionizer not found at " .. sessionizer, vim.log.levels.ERROR)
 		return
 	end
-	-- Run it inside a new tmux window if we're already in tmux
-	if vim.env.TMUX then
-		vim.fn.jobstart({ "tmux", "display-popup", "-E", sessionizer }, { detach = true })
-	else
-		-- not in tmux: run it directly (it will create/attach a session)
-		vim.fn.jobstart({ sessionizer }, { detach = true })
+	if not vim.env.TMUX then
+		-- Not in tmux
+		vim.notify("tmux not started")
+		return
 	end
+	-- Run it inside a new tmux window if we're already in tmux
+	vim.fn.jobstart({ "tmux", "display-popup", "-E", sessionizer }, { detach = true })
 end, { noremap = true, silent = true, desc = "Project switcher (tmux sessionizer)" })
 
 vim.keymap.set("n", "<leader>H", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
