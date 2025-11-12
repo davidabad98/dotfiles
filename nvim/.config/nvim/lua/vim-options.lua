@@ -149,12 +149,24 @@ vim.o.updatetime = 50 -- 0.05 seconds idle time before CursorHold triggers
 
 -- configure diagnostic display
 vim.diagnostic.config({
-	-- virtual_text = false, -- disable inline text
+	virtual_text = true, -- disable inline text
 	-- signs = true,
 	-- underline = true,
 	-- update_in_insert = false,
 	severity_sort = true,
 })
+
+-- toggle virtual_text on/off
+vim.keymap.set("n", "<leader>dt", function()
+	local vt = vim.diagnostic.config().virtual_text
+	if vt == false then
+		vim.diagnostic.config({ virtual_text = true })
+		print("diagnostic virtual_text = ON")
+	else
+		vim.diagnostic.config({ virtual_text = false })
+		print("diagnostic virtual_text = OFF")
+	end
+end, { desc = "Toggle diagnostics virtual_text" })
 
 vim.api.nvim_create_autocmd("CursorHold", {
 	callback = function()
