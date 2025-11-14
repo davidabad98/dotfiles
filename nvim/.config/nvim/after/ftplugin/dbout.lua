@@ -1,0 +1,15 @@
+--after/ftplugin/dbout.lua
+-- Runs only for filetype=dbout (DBUI results)
+-- Trim right-side padding that comes from sqlcmd's fixed-width output
+-- Do it after the buffer is displayed to avoid racing the content.
+-- vim.api.nvim_create_autocmd("BufWinEnter", {
+-- 	buffer = 0,
+-- 	once = true,
+-- 	callback = function()
+-- 		-- Silent trim of trailing spaces on every non-empty line
+-- 		vim.cmd([[%s/\s\+$//e]])
+-- 	end,
+-- })
+
+-- Handy re-trim key if you rerun queries:
+--vim.keymap.set("n", "<leader>dt", [[:%s/\s\+$//e<CR>]], { buffer = true, silent = true, desc = "DBUI: Trim padding" })
