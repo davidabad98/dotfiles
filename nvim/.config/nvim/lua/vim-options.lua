@@ -20,6 +20,7 @@ vim.opt.ignorecase = true -- Case-insensitive search...
 vim.opt.smartcase = true -- ...unless capital letters in query
 vim.opt.hlsearch = true -- Highlight search results
 vim.opt.incsearch = true -- Show matches while typing
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Clear search when pressing Esc
 
 -- ========== Clipboard ==========
 vim.opt.clipboard = "unnamedplus" -- Use system clipboard
@@ -33,21 +34,21 @@ vim.opt.colorcolumn = "88" -- Enable vertical ruler line
 -- ========== Keymaps ==========
 
 -- Quick save & quit
-vim.keymap.set("n", "<leader>w", ":w<CR>")
-vim.keymap.set("n", "<leader>q", ":q<CR>")
-vim.keymap.set("n", "<leader>x", ":x<CR>")
+vim.keymap.set("n", "<leader>w", "<cmd>w<CR>")
+vim.keymap.set("n", "<leader>q", "<cmd>q<CR>")
+vim.keymap.set("n", "<leader>x", "<cmd>x<CR>")
 
 -- ========== Naviagtion ==========
 
 -- Switch b/w buffers
-vim.keymap.set("n", "<S-h>", ":bprevious<CR>")
-vim.keymap.set("n", "<S-l>", ":bnext<CR>")
+vim.keymap.set("n", "<S-h>", "<cmd>bprevious<CR>")
+vim.keymap.set("n", "<S-l>", "<cmd>bnext<CR>")
 
 -- Splits
-vim.keymap.set("n", "<leader>v", ":vsplit<CR>")
-vim.keymap.set("n", "<leader>s", ":split<CR>")
-vim.keymap.set("n", "<leader>n", ":vnew<CR>")
-vim.keymap.set("n", "<leader>t", ":tabnew<CR>")
+vim.keymap.set("n", "<leader>v", "<cmd>vsplit<CR>")
+vim.keymap.set("n", "<leader>s", "<cmd>split<CR>")
+vim.keymap.set("n", "<leader>n", "<cmd>vnew<CR>")
+vim.keymap.set("n", "<leader>t", "<cmd>tabnew<CR>")
 
 -- Window navigation with leader
 vim.keymap.set("n", "<leader>h", "<C-w>h")
@@ -56,8 +57,8 @@ vim.keymap.set("n", "<leader>k", "<C-w>k")
 vim.keymap.set("n", "<leader>l", "<C-w>l")
 
 -- ========== Quickfix ==========
-vim.keymap.set("n", "<C-j>", ":cnext<CR>", { desc = "Quickfix Next" })
-vim.keymap.set("n", "<C-k>", ":cprev<CR>", { desc = "Quickfix Prev" })
+vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>", { desc = "Quickfix Next" })
+vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>", { desc = "Quickfix Prev" })
 
 -- helpers to toggle qf/loclist windows
 -- local function is_open(kind)
@@ -127,6 +128,12 @@ end, { noremap = true, silent = true, desc = "Project switcher (tmux sessionizer
 
 vim.keymap.set("n", "<leader>H", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 
+-- Copy current file name
+vim.keymap.set("n", "<leader>cn", function()
+	vim.fn.setreg("+", vim.fn.expand("%:t"))
+	print("Copied filename: " .. vim.fn.expand("%:t"))
+end, { noremap = true, silent = true })
+
 -- Show hidden characters (good for debugging indentation)
 vim.opt.list = true
 vim.opt.listchars = { tab = "→ ", trail = "·", nbsp = "␣" }
@@ -137,6 +144,15 @@ vim.cmd("au FocusGained,BufEnter * checktime")
 
 -- Visual mode: paste over selection without overwriting the unnamed register
 vim.keymap.set("x", "<leader>p", '"_dP', { noremap = true, silent = true })
+
+-- Highlight when yanking (copying) text
+vim.api.nvim_create_autocmd("TextYankPost", {
+	desc = "Highlight when yanking (copying) text",
+	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+	callback = function()
+		vim.hl.on_yank()
+	end,
+})
 
 -- Always normalize to LF line endings
 -- vim.api.nvim_create_autocmd({ "BufRead", "BufWritePre" }, {
@@ -174,6 +190,9 @@ vim.api.nvim_create_autocmd("CursorHold", {
 	end,
 })
 
--- ========== Design ==========
--- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
--- vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+vim.keymap.set(
+	"n",
+	"<leader>Q",
+	vim.diagnostic.setloclist,
+	{ noremap = true, silent = true, desc = "Open Diagnostic [Q]uickfix list" }
+)
