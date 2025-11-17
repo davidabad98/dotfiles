@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REAL="/opt/mssql-tools18/bin/sqlcmd"
+
+# Produce a real TAB character safely
+TAB="$(printf '\t')"
+
+# Default flags:
+#  -W : trim trailing spaces
+#  -s : set column separator to TAB (actual TAB in quotes)
+#  -w : very wide page width to avoid wrapping
+DEFAULT_FLAGS=(-W -s "$TAB" -w 65535)
+
+# Allow per-session overrides via DBUI_SQLCMD_FLAGS (string)
+if [[ -n "${DBUI_SQLCMD_FLAGS:-}" ]]; then
+  # shellsplit the string into an array (best effort)
+  # If you want to avoid eval, just let users set simple flags like "-y 0".
+  read -r -a OVERRIDE <<<"${DBUI_SQLCMD_FLAGS}"
+  exec "$REAL" "${OVERRIDE[@]}" "$@"
+else
+  exec "$REAL" "${DEFAULT_FLAGS[@]}" "$@"
+fi
