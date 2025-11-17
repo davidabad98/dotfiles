@@ -44,6 +44,10 @@ return {
 			vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope Live grep" })
 			vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope Buffers" })
 			vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope Help" })
+			vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Telescope Keymaps" })
+			vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Telescope Current Word" })
+			vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Telescope Diagnostics" })
+			vim.keymap.set("n", "<leader>f.", builtin.oldfiles, { desc = 'Telescope Recent Files ("." for repeat)' })
 		end,
 	},
 
