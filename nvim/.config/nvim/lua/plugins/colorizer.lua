@@ -1,6 +1,7 @@
 -- lua/plugins/colorizer.lua
 return {
 	"norcalli/nvim-colorizer.lua",
+	event = { "BufReadPost", "BufNewFile" }, -- or "VeryLazy"
 	config = function()
 		-- Attach to certain Filetypes, add special configuration for `html`
 		-- Use `background` for everything else.
