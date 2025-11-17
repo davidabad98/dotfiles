@@ -8,6 +8,7 @@ return {
 		require("colorizer").setup({
 			"css",
 			"javascript",
+			"html",
 			html = {
 				mode = "foreground",
 			},
