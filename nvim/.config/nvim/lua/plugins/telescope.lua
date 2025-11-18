@@ -36,7 +36,6 @@ return {
 
 			-- load ui-select extension (the second spec just needs this)
 			pcall(telescope.load_extension, "ui-select")
-
 			local builtin = require("telescope.builtin")
 
 			vim.keymap.set("n", "<C-p>", builtin.find_files, { desc = "Telescope Find files" })
@@ -45,9 +44,33 @@ return {
 			vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope Buffers" })
 			vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope Help" })
 			vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Telescope Keymaps" })
-			vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Telescope Current Word" })
 			vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Telescope Diagnostics" })
 			vim.keymap.set("n", "<leader>f.", builtin.oldfiles, { desc = 'Telescope Recent Files ("." for repeat)' })
+			-- NORMAL: grep word under cursor
+			vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Telescope Current Word" })
+			-- VISUAL: grep visual selection (sentences, spaces, multiline)
+			vim.keymap.set("v", "<leader>fw", function()
+				-- Yank visual selection into register 0 without leaving garbage mappings
+				-- In visual mode, this works on the current selection
+				vim.cmd('normal! "0y')
+
+				-- Get the yanked text
+				local text = vim.fn.getreg("0")
+				if not text or text == "" then
+					return
+				end
+
+				-- Make it nicer for grep if there are newlines: join them with spaces
+				text = text:gsub("\n", " ")
+
+				builtin.live_grep({
+					default_text = text,
+				})
+			end, {
+				desc = "Telescope Visual Selection",
+				silent = true,
+				noremap = true,
+			})
 		end,
 	},
 
