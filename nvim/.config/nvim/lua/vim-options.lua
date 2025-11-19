@@ -126,7 +126,12 @@ vim.keymap.set("n", "<C-f>", function()
 	vim.fn.jobstart({ "tmux", "display-popup", "-E", sessionizer }, { detach = true })
 end, { noremap = true, silent = true, desc = "Project switcher (tmux sessionizer)" })
 
-vim.keymap.set("n", "<leader>H", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+vim.keymap.set(
+	"n",
+	"<leader>H",
+	[[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
+	{ desc = "Substitute (replace) word under cursor in whole file" }
+)
 
 -- Copy current file name
 vim.keymap.set("n", "<leader>cn", function()

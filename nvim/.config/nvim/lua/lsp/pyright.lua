@@ -10,6 +10,7 @@ return {
 				-- recommended defaults; tune to taste
 				typeCheckingMode = "basic", -- off, basic, strict
 				useLibraryCodeForTypes = true,
+				diagnosticMode = "workspace", -- analyze entire project
 				autoSearchPaths = true,
 			},
 		},

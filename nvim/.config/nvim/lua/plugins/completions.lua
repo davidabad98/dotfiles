@@ -1,3 +1,4 @@
+-- lua/plugins/completions.lua
 return {
 	{
 		"hrsh7th/nvim-cmp",
