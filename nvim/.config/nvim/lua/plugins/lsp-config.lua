@@ -62,4 +62,18 @@ return {
 
 	-- keep nvim-lspconfig plugin installed, but we don't call the legacy setup()
 	{ "neovim/nvim-lspconfig" },
+	{
+		"j-hui/fidget.nvim",
+		version = "*", -- keep on a tagged release
+		event = "LspAttach", -- load only when an LSP attaches
+		opts = {
+			-- LSP progress (this is what you want)
+			progress = {},
+
+			-- Notification subsystem (we keep it *not* overriding vim.notify)
+			notification = {
+				override_vim_notify = false, -- IMPORTANT: do NOT touch vim.notify
+			},
+		},
+	},
 }
