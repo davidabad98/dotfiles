@@ -4,7 +4,46 @@ return {
 	{
 		"williamboman/mason.nvim",
 		config = function()
-			require("mason").setup()
+			-- Standard Mason setup, but with the extra registry for roslyn/rzls
+			require("mason").setup({
+				registries = {
+					"github:mason-org/mason-registry",
+					"github:Crashdummyy/mason-registry",
+				},
+			})
+
+			-- Optional: auto-install tools
+			local mr_ok, mr = pcall(require, "mason-registry")
+			if not mr_ok then
+				return
+			end
+
+			local tools = {
+
+				-- LSP binaries:
+				"html-lsp",
+				"css-lsp",
+				"eslint-lsp",
+				"typescript-language-server",
+				"json-lsp",
+
+				-- formatters / tools:
+				"csharpier",
+				"prettier",
+				"stylua",
+				"xmlformatter",
+
+				-- C# / Razor binaries
+				"roslyn",
+				"rzls",
+			}
+
+			for _, tool in ipairs(tools) do
+				local ok, pkg = pcall(mr.get_package, tool)
+				if ok and not pkg:is_installed() then
+					pkg:install()
+				end
+			end
 		end,
 	},
 
@@ -13,7 +52,7 @@ return {
 		"williamboman/mason-lspconfig.nvim",
 		config = function()
 			-- list servers you want installed / enabled
-			local servers = { "lua_ls", "pyright" } --, "omnisharp"  }  -- add more as needed "omnisharp"
+			local servers = { "lua_ls", "pyright" }
 
 			-- install servers via mason
 			require("mason-lspconfig").setup({
@@ -57,6 +96,10 @@ return {
 				-- enable the server (call pcall to avoid hard errors during changes)
 				pcall(vim.lsp.enable, name)
 			end
+
+			vim.lsp.config("roslyn", {})
+			-- NOTE: do *not* call vim.lsp.enable("roslyn") here;
+			-- roslyn.nvim handles enabling the client when C# files open.
 		end,
 	},
 
@@ -73,7 +116,20 @@ return {
 			-- Notification subsystem (we keep it *not* overriding vim.notify)
 			notification = {
 				override_vim_notify = false, -- IMPORTANT: do NOT touch vim.notify
+				view = {
+					-- make it actually visible
+					winblend = 0, -- 0 = opaque, 100 = fully transparent
+				},
 			},
+		},
+	},
+	{
+		"seblyng/roslyn.nvim",
+		---@module 'roslyn.config'
+		---@type RoslynNvimConfig
+		ft = { "cs", "razor" },
+		opts = {
+			-- your configuration comes here; leave empty for default settings
 		},
 	},
 }

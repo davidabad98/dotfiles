@@ -33,32 +33,61 @@ vim.opt.colorcolumn = "88" -- Enable vertical ruler line
 
 -- ========== Keymaps ==========
 
--- Quick save & quit
-vim.keymap.set("n", "<leader>w", "<cmd>w<CR>")
-vim.keymap.set("n", "<leader>q", "<cmd>q<CR>")
-vim.keymap.set("n", "<leader>x", "<cmd>x<CR>")
+-- ========== Save & quit ==========
 
--- ========== Naviagtion ==========
+vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", {
+	desc = "Save current buffer",
+})
 
--- Switch b/w buffers
-vim.keymap.set("n", "<S-h>", "<cmd>bprevious<CR>")
-vim.keymap.set("n", "<S-l>", "<cmd>bnext<CR>")
+vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", {
+	desc = "Quit window",
+})
 
--- Splits
-vim.keymap.set("n", "<leader>v", "<cmd>vsplit<CR>")
-vim.keymap.set("n", "<leader>s", "<cmd>split<CR>")
-vim.keymap.set("n", "<leader>n", "<cmd>vnew<CR>")
-vim.keymap.set("n", "<leader>t", "<cmd>tabnew<CR>")
+vim.keymap.set("n", "<leader>x", "<cmd>x<CR>", {
+	desc = "Save and quit",
+})
+
+-- ========== Navigation ==========
+
+-- Switch between buffers
+vim.keymap.set("n", "<S-h>", "<cmd>bprevious<CR>", {
+	desc = "Previous buffer",
+})
+vim.keymap.set("n", "<S-l>", "<cmd>bnext<CR>", {
+	desc = "Next buffer",
+})
+
+-- Splits & tabs
+vim.keymap.set("n", "<leader>v", "<cmd>vsplit<CR>", {
+	desc = "Vertical split",
+})
+vim.keymap.set("n", "<leader>s", "<cmd>split<CR>", {
+	desc = "Horizontal split",
+})
+vim.keymap.set("n", "<leader>n", "<cmd>vnew<CR>", {
+	desc = "New vertical empty buffer",
+})
+vim.keymap.set("n", "<leader>t", "<cmd>tabnew<CR>", {
+	desc = "New tab",
+})
 
 -- Window navigation with leader
-vim.keymap.set("n", "<leader>h", "<C-w>h")
-vim.keymap.set("n", "<leader>j", "<C-w>j")
-vim.keymap.set("n", "<leader>k", "<C-w>k")
-vim.keymap.set("n", "<leader>l", "<C-w>l")
+vim.keymap.set("n", "<leader>h", "<C-w>h", {
+	desc = "Focus left window",
+})
+vim.keymap.set("n", "<leader>j", "<C-w>j", {
+	desc = "Focus lower window",
+})
+vim.keymap.set("n", "<leader>k", "<C-w>k", {
+	desc = "Focus upper window",
+})
+vim.keymap.set("n", "<leader>l", "<C-w>l", {
+	desc = "Focus right window",
+})
 
 -- ========== Quickfix ==========
-vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>", { desc = "Quickfix Next" })
-vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>", { desc = "Quickfix Prev" })
+vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>zz", { desc = "Quickfix Next (centered)" })
+vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>zz", { desc = "Quickfix Prev (centered)" })
 
 -- helpers to toggle qf/loclist windows
 -- local function is_open(kind)
