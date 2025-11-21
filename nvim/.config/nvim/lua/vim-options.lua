@@ -136,6 +136,7 @@ vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { noremap = true, silent = true })
 vim.keymap.set("i", "<C-c>", "<Esc>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "Q", "<nop>")
+vim.keymap.set("i", "<C-h>", "<C-w>") -- CTRL+backspace
 
 -- Open the tmux sessionizer from inside Neovim
 -- NOTE: requires tmux; inside tmux it opens a popup, outside it spawns a new tmux session/window
@@ -168,6 +169,18 @@ vim.keymap.set("n", "<leader>cn", function()
 	print("Copied filename: " .. vim.fn.expand("%:t"))
 end, { noremap = true, silent = true })
 
+-- Copy path relative to current working directory
+vim.keymap.set("n", "<leader>cp", function()
+	vim.fn.setreg("+", vim.fn.expand("%"))
+	print("Copied path: " .. vim.fn.expand("%"))
+end, { noremap = true, silent = true })
+
+-- Copy absolute path
+vim.keymap.set("n", "<leader>cP", function()
+	vim.fn.setreg("+", vim.fn.expand("%:p"))
+	print("Copied absolute path: " .. vim.fn.expand("%:p"))
+end, { noremap = true, silent = true })
+
 -- Show hidden characters (good for debugging indentation)
 vim.opt.list = true
 vim.opt.listchars = { tab = "→ ", trail = "·", nbsp = "␣" }
@@ -197,15 +210,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- ========== Diagnostics ==========
 vim.o.updatetime = 50 -- 0.05 seconds idle time before CursorHold triggers
 
--- configure diagnostic display
-vim.diagnostic.config({
-	virtual_text = true, -- disable inline text
-	-- signs = true,
-	-- underline = true,
-	-- update_in_insert = false,
-	severity_sort = true,
-})
-
 -- toggle virtual_text on/off
 vim.keymap.set("n", "<leader>dt", function()
 	local vt = vim.diagnostic.config().virtual_text
@@ -223,10 +227,3 @@ vim.api.nvim_create_autocmd("CursorHold", {
 		vim.diagnostic.open_float(nil, { focus = false })
 	end,
 })
-
-vim.keymap.set(
-	"n",
-	"<leader>Q",
-	vim.diagnostic.setloclist,
-	{ noremap = true, silent = true, desc = "Open Diagnostic [Q]uickfix list" }
-)

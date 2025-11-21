@@ -67,18 +67,52 @@ return {
 				capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 			end
 
-			-- common on_attach for LSP keymaps (per-buffer)
+			-- === unified on_attach for ALL LSPs (C#, Python, Lua, etc.) ===
 			local on_attach = function(client, bufnr)
-				local bufopts = { noremap = true, silent = true, buffer = bufnr }
-				vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
-				vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
-				vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, bufopts)
-				vim.keymap.set("n", "<leader>rr", vim.lsp.buf.references, bufopts)
-				vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, bufopts)
-				-- format on save if supported
+				local map = function(mode, keys, func, desc)
+					if desc then
+						desc = "LSP: " .. desc
+					end
+					vim.keymap.set(mode, keys, func, {
+						buffer = bufnr,
+						noremap = true,
+						silent = true,
+						desc = desc,
+					})
+				end
+
+				-- Navigation
+				map("n", "gd", vim.lsp.buf.definition, "Goto Definition")
+				map("n", "gD", vim.lsp.buf.declaration, "Goto Declaration")
+				map("n", "gi", vim.lsp.buf.implementation, "Goto Implementation")
+				map("n", "gr", vim.lsp.buf.references, "Goto References")
+				map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
+				map("n", "<gk>", vim.lsp.buf.signature_help, "Signature Help")
+
+				-- Refactor / workspace
+				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
+				map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+				map("v", "<leader>ca", vim.lsp.buf.code_action, "Code Action (Range)")
+				map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, "Workspace Add Folder")
+				map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, "Workspace Remove Folder")
+				map("n", "<leader>wl", function()
+					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+				end, "Workspace List Folders")
+
+				-- Diagnostics
+				map("n", "[d", vim.diagnostic.goto_prev, "Prev Diagnostic")
+				map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
+				map("n", "<leader>e", vim.diagnostic.open_float, "Line Diagnostics")
+				map("n", "<leader>Q", function()
+					vim.diagnostic.setqflist({ bufnr = 0, open = true })
+				end, "Buffer Diagnostics to Quickfix")
+
+				-- You can add language-specific tweaks here if needed:
+				-- if client.name == "roslyn" then ... end
+				-- if client.name == "pyright" then ... end
 			end
 
-			-- register & enable each server
+			-- register & enable each "classic" server
 			for _, name in ipairs(servers) do
 				-- try to load a per-server config file: lua/lsp/<name>.lua
 				local ok, server_opts = pcall(require, "lsp." .. name)
@@ -97,9 +131,29 @@ return {
 				pcall(vim.lsp.enable, name)
 			end
 
-			vim.lsp.config("roslyn", {})
-			-- NOTE: do *not* call vim.lsp.enable("roslyn") here;
-			-- roslyn.nvim handles enabling the client when C# files open.
+			-- === Roslyn: use the SAME on_attach + capabilities ===
+			vim.lsp.config("roslyn", {
+				on_attach = on_attach,
+				capabilities = capabilities,
+				-- add Roslyn-specific settings here later if you want
+			})
+			-- NOTE: do NOT call vim.lsp.enable("roslyn"); roslyn.nvim handles that.
+
+			-- IMPORTANT: vim diagnostic configuration AFTER LSPs are loaded
+			vim.diagnostic.config({
+				underline = false,
+				virtual_text = false, -- disable inline text
+				update_in_insert = false,
+				severity_sort = true,
+				signs = {
+					text = {
+						[vim.diagnostic.severity.ERROR] = " ",
+						[vim.diagnostic.severity.WARN] = " ",
+						[vim.diagnostic.severity.HINT] = " ",
+						[vim.diagnostic.severity.INFO] = " ",
+					},
+				},
+			})
 		end,
 	},
 
@@ -116,8 +170,7 @@ return {
 			-- Notification subsystem (we keep it *not* overriding vim.notify)
 			notification = {
 				override_vim_notify = false, -- IMPORTANT: do NOT touch vim.notify
-				view = {
-					-- make it actually visible
+				window = {
 					winblend = 0, -- 0 = opaque, 100 = fully transparent
 				},
 			},
