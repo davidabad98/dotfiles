@@ -13,8 +13,27 @@ return {
 			local dap, dapui = require("dap"), require("dapui")
 
 			-- 1) UI setup (must be called once)
+			-- more minimal ui
 			dapui.setup({
-				-- you can customize icons/layouts here if you like
+				expand_lines = true,
+				controls = { enabled = false }, -- no extra play/step buttons
+				floating = { border = "rounded" },
+				-- Set dapui window
+				render = {
+					max_type_length = 60,
+					max_value_lines = 200,
+				},
+				-- Only one layout: just the "scopes" (variables) list at the bottom
+				layouts = {
+					{
+						elements = {
+							{ id = "scopes", size = 0.6 }, -- 60% of the bottom panel
+							{ id = "repl", size = 0.4 }, -- 40% of the bottom panel
+						},
+						size = 15, -- height in lines
+						position = "bottom", -- bottom of the screen
+					},
+				},
 			})
 
 			-- 2) Open/close UI on session start/stop
@@ -44,7 +63,9 @@ return {
 			vim.keymap.set("n", "<Leader>lp", function()
 				dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
 			end)
-			vim.keymap.set("n", "<Leader>dr", dap.repl.open)
+			vim.keymap.set("n", "<leader>dr", function()
+				dap.repl.toggle()
+			end, { desc = "DAP REPL toggle" })
 			vim.keymap.set("n", "<Leader>dl", dap.run_last)
 			vim.keymap.set({ "n", "v" }, "<Leader>dh", function()
 				require("dap.ui.widgets").hover()
@@ -60,6 +81,12 @@ return {
 				local widgets = require("dap.ui.widgets")
 				widgets.centered_float(widgets.scopes)
 			end)
+			vim.keymap.set("n", "<leader>du", function()
+				dapui.toggle()
+			end, { noremap = true, silent = true, desc = "Toggle DAP UI" })
+			vim.keymap.set({ "n", "v" }, "<leader>dw", function()
+				dapui.eval(nil, { enter = true })
+			end, { noremap = true, silent = true, desc = "Add word under cursor to Watches" })
 
 			-- === Neotest + DAP: debug nearest test ===
 			vim.keymap.set("n", "<F6>", function()
