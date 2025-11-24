@@ -207,6 +207,9 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 --   command = "set ff=unix",
 -- })
 
+vim.g.dotnet_errors_only = true
+vim.g.dotnet_show_project_file = false
+
 -- ========== Diagnostics ==========
 vim.o.updatetime = 50 -- 0.05 seconds idle time before CursorHold triggers
 
@@ -226,4 +229,9 @@ vim.api.nvim_create_autocmd("CursorHold", {
 	callback = function()
 		vim.diagnostic.open_float(nil, { focus = false })
 	end,
+})
+
+-- Background color for DAP
+vim.api.nvim_set_hl(0, "DapStoppedLine", {
+	bg = "#52503b", -- pick a bg colour you like
 })

@@ -16,7 +16,7 @@ return {
 			-- more minimal ui
 			dapui.setup({
 				expand_lines = true,
-				controls = { enabled = false }, -- no extra play/step buttons
+				controls = { enabled = true }, -- no extra play/step buttons
 				floating = { border = "rounded" },
 				-- Set dapui window
 				render = {
@@ -104,13 +104,11 @@ return {
 				linehl = "DiagnosticError",
 				numhl = "DiagnosticError",
 			})
-			-- vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
-			-- vim.fn.sign_define("DapStopped", { text = "", texthl = "DiagnosticWarn" })
 			vim.fn.sign_define("DapStopped", {
 				text = "▶",
 				texthl = "DiagnosticWarn",
-				linehl = "DiagnosticWarn",
-				numhl = "DiagnosticWarn",
+				linehl = "DapStoppedLine",
+				numhl = "DapStoppedLine",
 			})
 			-- vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticHint" })
 			vim.fn.sign_define("DapBreakpointRejected", {
@@ -161,7 +159,7 @@ return {
 
 			-- === .NET (netcoredbg) ===
 			local netcoredbg_path = vim.fn.stdpath("data") .. "/mason/packages/netcoredbg/netcoredbg"
-
+			local dotnet = require("configs.nvim-dap-dotnet")
 			-- one adapter, two names (guide does this)
 			local netcoredbg_adapter = {
 				type = "executable",
@@ -179,9 +177,12 @@ return {
 					name = "launch - netcoredbg",
 					request = "launch",
 					program = function()
-						-- return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/src/", "file")
-						return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/net9.0/", "file")
+						return dotnet.build_dll_path()
 					end,
+					-- program = function()
+					-- 	-- return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/src/", "file")
+					-- 	return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/net9.0/", "file")
+					-- end,
 
 					-- justMyCode = false,
 					-- stopAtEntry = false,
