@@ -34,6 +34,7 @@ return {
 			-- 3) Keymaps
 			vim.keymap.set("n", "<F5>", dap.continue)
 			vim.keymap.set("n", "<F10>", dap.step_over)
+			vim.keymap.set("n", "<F9>", dap.toggle_breakpoint)
 			vim.keymap.set("n", "<F11>", dap.step_into)
 			vim.keymap.set("n", "<F12>", dap.step_out)
 			vim.keymap.set("n", "<Leader>b", dap.toggle_breakpoint)
@@ -60,10 +61,37 @@ return {
 				widgets.centered_float(widgets.scopes)
 			end)
 
+			-- === Neotest + DAP: debug nearest test ===
+			vim.keymap.set("n", "<F6>", function()
+				require("neotest").run.run({ strategy = "dap" })
+			end, { desc = "Debug nearest test (neotest-dotnet)" })
+
+			vim.keymap.set("n", "<leader>dT", function()
+				require("neotest").run.run({ strategy = "dap" })
+			end, { desc = "Debug nearest test (neotest-dotnet)" })
+
 			-- 4) (Optional) nicer signs
-			vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
-			vim.fn.sign_define("DapStopped", { text = "▶", texthl = "DiagnosticWarn" })
-			vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticHint" })
+			vim.fn.sign_define("DapBreakpoint", {
+				text = "●",
+				texthl = "DiagnosticError",
+				linehl = "DiagnosticError",
+				numhl = "DiagnosticError",
+			})
+			-- vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
+			-- vim.fn.sign_define("DapStopped", { text = "", texthl = "DiagnosticWarn" })
+			vim.fn.sign_define("DapStopped", {
+				text = "▶",
+				texthl = "DiagnosticWarn",
+				linehl = "DiagnosticWarn",
+				numhl = "DiagnosticWarn",
+			})
+			-- vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticHint" })
+			vim.fn.sign_define("DapBreakpointRejected", {
+				text = "⭕",
+				texthl = "DiagnosticHint",
+				linehl = "DiagnosticHint",
+				numhl = "DiagnosticHint",
+			})
 
 			-- 5) Auto-install / hook adapters via Mason
 			require("mason-nvim-dap").setup({
@@ -105,21 +133,49 @@ return {
 			}
 
 			-- === .NET (netcoredbg) ===
-			local netcoredbg = vim.fn.stdpath("data") .. "/mason/packages/netcoredbg/netcoredbg"
-			dap.adapters.coreclr = {
+			local netcoredbg_path = vim.fn.stdpath("data") .. "/mason/packages/netcoredbg/netcoredbg"
+
+			-- one adapter, two names (guide does this)
+			local netcoredbg_adapter = {
 				type = "executable",
-				command = netcoredbg,
+				command = netcoredbg_path,
 				args = { "--interpreter=vscode" },
 			}
+
+			-- neotest-dotnet default adapter_name is "netcoredbg"
+			dap.adapters.netcoredbg = netcoredbg_adapter -- for neotest-dotnet
+			dap.adapters.coreclr = netcoredbg_adapter -- for regular DAP configs
+
 			dap.configurations.cs = {
 				{
 					type = "coreclr",
-					name = "Launch",
+					name = "launch - netcoredbg",
 					request = "launch",
 					program = function()
-						-- point to your built DLL (Debug/Release as appropriate)
-						return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+						-- return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/src/", "file")
+						return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/net9.0/", "file")
 					end,
+
+					-- justMyCode = false,
+					-- stopAtEntry = false,
+					-- -- program = function()
+					-- --   -- todo: request input from ui
+					-- --   return "/path/to/your.dll"
+					-- -- end,
+					-- env = {
+					--   ASPNETCORE_ENVIRONMENT = function()
+					--     -- todo: request input from ui
+					--     return "Development"
+					--   end,
+					--   ASPNETCORE_URLS = function()
+					--     -- todo: request input from ui
+					--     return "http://localhost:5050"
+					--   end,
+					-- },
+					-- cwd = function()
+					--   -- todo: request input from ui
+					--   return vim.fn.getcwd()
+					-- end,
 				},
 			}
 
@@ -135,6 +191,30 @@ return {
 			--   { type = "pwa-node", request = "launch", name = "Launch file", program = "${file}", cwd = "${workspaceFolder}" },
 			-- }
 			-- dap.configurations.typescript = dap.configurations.javascript
+		end,
+	},
+	{
+		"nvim-neotest/neotest",
+		dependencies = {
+			"nvim-neotest/nvim-nio",
+			"nvim-lua/plenary.nvim",
+			"antoinemadec/FixCursorHold.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			"Issafalcon/neotest-dotnet",
+		},
+		config = function()
+			require("neotest").setup({
+				adapters = {
+					require("neotest-dotnet")({
+						dap = {
+							-- match the adapter name we defined above
+							adapter_name = "netcoredbg",
+							-- you can also pass dap args here if needed
+							-- args = { justMyCode = false },
+						},
+					}),
+				},
+			})
 		end,
 	},
 }
