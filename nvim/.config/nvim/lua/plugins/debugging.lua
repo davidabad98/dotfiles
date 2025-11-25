@@ -16,26 +16,32 @@ return {
 			-- more minimal ui
 			dapui.setup({
 				expand_lines = true,
-				controls = { enabled = true }, -- no extra play/step buttons
+				controls = { enabled = true },
 				floating = { border = "rounded" },
-				-- Set dapui window
 				render = {
 					max_type_length = 60,
 					max_value_lines = 200,
 				},
-				-- Only one layout: just the "scopes" (variables) list at the bottom
 				layouts = {
+					-- Bottom: scopes + repl
 					{
 						elements = {
-							{ id = "scopes", size = 0.6 }, -- 60% of the bottom panel
-							{ id = "repl", size = 0.4 }, -- 40% of the bottom panel
+							{ id = "scopes", size = 0.7 }, -- bottom-left
+							{ id = "repl", size = 0.3 }, -- bottom-right (within the tray)
 						},
-						size = 15, -- height in lines
-						position = "bottom", -- bottom of the screen
+						size = 15, -- height of bottom tray
+						position = "bottom", -- horizontal bar at bottom
+					},
+					-- Right: console (dap-terminal for Python)
+					{
+						elements = {
+							{ id = "console", size = 1.0 }, -- full height of the sidebar
+						},
+						size = 60, -- width of right sidebar (tweak to taste)
+						position = "right", -- vertical bar at right
 					},
 				},
 			})
-
 			-- 2) Open/close UI on session start/stop
 			dap.listeners.before.attach.dapui_config = function()
 				dapui.open()
@@ -87,6 +93,14 @@ return {
 			vim.keymap.set({ "n", "v" }, "<leader>dw", function()
 				dapui.eval(nil, { enter = true })
 			end, { noremap = true, silent = true, desc = "Add word under cursor to Watches" })
+			vim.keymap.set("n", "<leader>dc", function()
+				dapui.float_element("console", {
+					enter = true, -- focus the window so you can type immediately
+					position = "center", -- or "bottom" if you prefer
+					width = 120, -- tweak to taste
+					height = 15,
+				})
+			end, { desc = "DAP console (integrated terminal)" })
 
 			-- === Neotest + DAP: debug nearest test ===
 			vim.keymap.set("n", "<F6>", function()

@@ -87,7 +87,7 @@ return {
 				map("n", "gi", vim.lsp.buf.implementation, "Goto Implementation")
 				map("n", "gr", vim.lsp.buf.references, "Goto References")
 				map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
-				map("n", "<gk>", vim.lsp.buf.signature_help, "Signature Help")
+				map("n", "gk", vim.lsp.buf.signature_help, "Signature Help")
 
 				-- Refactor / workspace
 				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
