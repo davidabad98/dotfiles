@@ -105,11 +105,11 @@ return {
 			-- === Neotest + DAP: debug nearest test ===
 			vim.keymap.set("n", "<F6>", function()
 				require("neotest").run.run({ strategy = "dap" })
-			end, { desc = "Debug nearest test (neotest-dotnet)" })
+			end, { desc = "Debug nearest test (DAP via neotest)" })
 
 			vim.keymap.set("n", "<leader>dT", function()
 				require("neotest").run.run({ strategy = "dap" })
-			end, { desc = "Debug nearest test (neotest-dotnet)" })
+			end, { desc = "Debug nearest test (DAP via neotest)" })
 
 			-- 4) (Optional) nicer signs
 			vim.fn.sign_define("DapBreakpoint", {
@@ -119,14 +119,14 @@ return {
 				numhl = "DiagnosticError",
 			})
 			vim.fn.sign_define("DapStopped", {
-				text = "▶",
+				text = "󰁕",
 				texthl = "DiagnosticWarn",
 				linehl = "DapStoppedLine",
 				numhl = "DapStoppedLine",
 			})
 			-- vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticHint" })
 			vim.fn.sign_define("DapBreakpointRejected", {
-				text = "⭕",
+				text = "",
 				texthl = "DiagnosticHint",
 				linehl = "DiagnosticHint",
 				numhl = "DiagnosticHint",
@@ -233,30 +233,6 @@ return {
 			--   { type = "pwa-node", request = "launch", name = "Launch file", program = "${file}", cwd = "${workspaceFolder}" },
 			-- }
 			-- dap.configurations.typescript = dap.configurations.javascript
-		end,
-	},
-	{
-		"nvim-neotest/neotest",
-		dependencies = {
-			"nvim-neotest/nvim-nio",
-			"nvim-lua/plenary.nvim",
-			"antoinemadec/FixCursorHold.nvim",
-			"nvim-treesitter/nvim-treesitter",
-			"Issafalcon/neotest-dotnet",
-		},
-		config = function()
-			require("neotest").setup({
-				adapters = {
-					require("neotest-dotnet")({
-						dap = {
-							-- match the adapter name we defined above
-							adapter_name = "netcoredbg",
-							-- you can also pass dap args here if needed
-							-- args = { justMyCode = false },
-						},
-					}),
-				},
-			})
 		end,
 	},
 }

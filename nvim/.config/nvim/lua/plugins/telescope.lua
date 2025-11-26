@@ -46,6 +46,18 @@ return {
 			vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Telescope Keymaps" })
 			vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "Telescope Diagnostics" })
 			vim.keymap.set("n", "<leader>f.", builtin.oldfiles, { desc = 'Telescope Recent Files ("." for repeat)' })
+
+			-- SYMBOLS (LSP)
+			-- Buffer symbols: functions, methods, classes, etc in current file
+			vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, {
+				desc = "Telescope Symbols (buffer)",
+			})
+
+			-- Workspace symbols: search across your project/codebase
+			vim.keymap.set("n", "<leader>fS", builtin.lsp_dynamic_workspace_symbols, {
+				desc = "Telescope Symbols (workspace)",
+			})
+
 			-- NORMAL: grep word under cursor
 			vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Telescope Current Word" })
 			-- VISUAL: grep visual selection (sentences, spaces, multiline)

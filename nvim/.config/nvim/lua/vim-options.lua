@@ -67,23 +67,23 @@ vim.keymap.set("n", "<leader>s", "<cmd>split<CR>", {
 vim.keymap.set("n", "<leader>n", "<cmd>vnew<CR>", {
 	desc = "New vertical empty buffer",
 })
-vim.keymap.set("n", "<leader>t", "<cmd>tabnew<CR>", {
-	desc = "New tab",
-})
+-- vim.keymap.set("n", "<leader>t", "<cmd>tabnew<CR>", {
+-- 	desc = "New tab",
+-- })
 
 -- Window navigation with leader
-vim.keymap.set("n", "<leader>h", "<C-w>h", {
-	desc = "Focus left window",
-})
-vim.keymap.set("n", "<leader>j", "<C-w>j", {
-	desc = "Focus lower window",
-})
-vim.keymap.set("n", "<leader>k", "<C-w>k", {
-	desc = "Focus upper window",
-})
-vim.keymap.set("n", "<leader>l", "<C-w>l", {
-	desc = "Focus right window",
-})
+-- vim.keymap.set("n", "<leader>h", "<C-w>h", {
+-- 	desc = "Focus left window",
+-- })
+-- vim.keymap.set("n", "<leader>j", "<C-w>j", {
+-- 	desc = "Focus lower window",
+-- })
+-- vim.keymap.set("n", "<leader>k", "<C-w>k", {
+-- 	desc = "Focus upper window",
+-- })
+-- vim.keymap.set("n", "<leader>l", "<C-w>l", {
+-- 	desc = "Focus right window",
+-- })
 
 -- ========== Quickfix ==========
 vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>zz", { desc = "Quickfix Next (centered)" })
@@ -231,7 +231,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
 	end,
 })
 
--- Background color for DAP
+-- Background color for DAP cursorline
 vim.api.nvim_set_hl(0, "DapStoppedLine", {
-	bg = "#52503b", -- pick a bg colour you like
+	bg = "#52503b",
 })
