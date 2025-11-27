@@ -332,13 +332,21 @@ fi
 selected_name=$(basename "$selected" | tr . _)
 
 if ! is_tmux_running; then
-    tmux new-session -ds "$selected_name" -c "$selected"
-    hydrate "$selected_name" "$selected"
+    # create a new tmux session and start nvim in the project root
+    tmux new-session -ds "$selected_name" -c "$selected" "nvim ."
+
+    # uncomment to enable per-project & gobal bootstrap scripts
+    # this runs any logic you might have in $project/.tmux-sessionizer
+    # hydrate "$selected_name" "$selected"
 fi
 
 if ! has_session "$selected_name"; then
-    tmux new-session -ds "$selected_name" -c "$selected"
-    hydrate "$selected_name" "$selected"
+    # tmux is running but session for this project doesn't exist yet
+    tmux new-session -ds "$selected_name" -c "$selected" "nvim ."
+
+    # uncomment to enable per-project & gobal bootstrap scripts
+    # this runs any logic you might have in $project/.tmux-sessionizer
+    # hydrate "$selected_name" "$selected"
 fi
 
 switch_to "$selected_name"
