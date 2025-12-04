@@ -113,6 +113,9 @@ vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>zz", { desc = "Quickfix Prev (center
 
 -- ========== Developer Essentials ==========
 
+-- Yank entire file to clipboard (no feedback)
+vim.keymap.set("n", "<leader>ya", ":%y+<CR>", { desc = "Yank whole file" })
+
 -- keep half-page moves centered
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { noremap = true, silent = true })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { noremap = true, silent = true })

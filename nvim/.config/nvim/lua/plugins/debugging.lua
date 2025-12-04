@@ -49,11 +49,12 @@ return {
 			dap.listeners.before.launch.dapui_config = function()
 				dapui.open()
 			end
+			-- Do NOT auto-close on terminate/exited
 			dap.listeners.before.event_terminated.dapui_config = function()
-				dapui.close()
+				-- dapui.close()
 			end
 			dap.listeners.before.event_exited.dapui_config = function()
-				dapui.close()
+				-- dapui.close()
 			end
 
 			-- 3) Keymaps
