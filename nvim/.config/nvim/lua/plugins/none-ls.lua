@@ -10,26 +10,31 @@ return {
 					-- Lua
 					null_ls.builtins.formatting.stylua,
 
-					-- Python via extras:
-					null_ls.builtins.formatting.isort, -- sort imports first
-					require("none-ls.diagnostics.ruff"), -- lint (ruff check)
-					require("none-ls.formatting.ruff"), -- format (ruff fmt)
+					-- Python: Ruff does *all* formatting, including imports
+					-- Prefer ruff_format (calls `ruff format`) over the older `ruff` fixer
+					require("none-ls.formatting.ruff_format"),
+					require("none-ls.diagnostics.ruff"), -- keep for linting if you like
+					-- Drop isort to avoid double-import-sorting
+					-- null_ls.builtins.formatting.isort,
 				},
 
 				on_attach = function(client, bufnr)
-					if client.server_capabilities and client.server_capabilities.documentFormattingProvider then
+					if
+						client.supports_method and client.supports_method("textDocument/formatting")
+						or (client.server_capabilities and client.server_capabilities.documentFormattingProvider)
+					then
 						local grp = vim.api.nvim_create_augroup("NullLsFormat." .. bufnr, { clear = true })
+
 						vim.api.nvim_create_autocmd("BufWritePre", {
 							group = grp,
 							buffer = bufnr,
 							callback = function()
 								vim.lsp.buf.format({
 									bufnr = bufnr,
-									-- ensure we use null-ls for formatting
+									async = false,
 									filter = function(c)
 										return c.name == "null-ls"
 									end,
-									async = false,
 								})
 							end,
 						})
