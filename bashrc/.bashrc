@@ -700,3 +700,8 @@ export PATH="$HOME/bin:$PATH"
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
 
+
+. "$HOME/.local/share/../bin/env"
+
+# opencode
+export PATH=/home/david/.opencode/bin:$PATH
