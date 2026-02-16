@@ -644,24 +644,91 @@ lazyg() {
 	git push
 }
 
-function hb {
-    if [ $# -eq 0 ]; then
-        echo "No file path specified."
-        return
-    elif [ ! -f "$1" ]; then
-        echo "File path does not exist."
-        return
-    fi
+# @description Uploads a local file to a Hastebin-style server (bin.christitus.com).
+# @usage hb <file_path>
+# @example hb logs.txt
+# @dependencies curl, jq
+# @returns A shareable URL to the uploaded document.
+# function hb {
+#     if [ $# -eq 0 ]; then
+#         echo "No file path specified."
+#         return
+#     elif [ ! -f "$1" ]; then
+#         echo "File path does not exist."
+#         return
+#     fi
+#
+#     uri="http://bin.christitus.com/documents"
+#     response=$(curl -s -X POST -d @"$1" "$uri")
+#     if [ $? -eq 0 ]; then
+#         hasteKey=$(echo $response | jq -r '.key')
+#         echo "http://bin.christitus.com/$hasteKey"
+#     else
+#         echo "Failed to upload the document."
+#     fi
+# }
 
-    uri="http://bin.christitus.com/documents"
-    response=$(curl -s -X POST -d @"$1" "$uri")
-    if [ $? -eq 0 ]; then
-        hasteKey=$(echo $response | jq -r '.key')
-        echo "http://bin.christitus.com/$hasteKey"
-    else
-        echo "Failed to upload the document."
-    fi
+# -----------------------------------------------------------------------------
+# tmux() wrapper: create/attach tmux sessions named after the current directory
+#
+# What it does (when you run `tmux` with NO arguments):
+#   - Uses the current directory name as the base session name.
+#   - Sanitizes the name so it is safe to use as a tmux session name:
+#       - Keeps: letters, numbers, dot (.), dash (-)
+#       - Replaces anything else with underscore (_)
+#   - Avoids name collisions:
+#       - If a session with that name already exists, creates a new one with
+#         a numeric suffix: name_2, name_3, ...
+#   - Avoids nesting tmux:
+#       - If already inside tmux ($TMUX is set), it creates the target session
+#         (detached) if needed, then switches the current client to it.
+#       - If not inside tmux, it creates and attaches to the session normally.
+#
+# What it does (when you run `tmux` WITH arguments):
+#   - Does NOT interfere.
+#   - It forwards directly to the real tmux binary.
+#     Example: `tmux ls`, `tmux attach -t foo`, etc.
+# -----------------------------------------------------------------------------
+tmux() {
+  # If the user provided arguments (e.g., `tmux ls`), do not change behavior.
+  if [[ $# -gt 0 ]]; then
+    command tmux "$@"
+    return
+  fi
+
+  # Base session name = current directory (no newline like `basename` would add).
+  local base name n
+  base="${PWD##*/}"
+
+  # Sanitize the session name:
+  # - keep alphanumerics plus dot/dash
+  # - replace all other characters with underscore
+  base="${base//[^[:alnum:]_.-]/_}"
+
+  # Start with the base name; only add suffixes if needed.
+  name="$base"
+  n=2
+
+  # If a session with this name already exists, create a numbered variant.
+  # This avoids collisions like multiple different ".../api" directories.
+  while command tmux has-session -t "$name" 2>/dev/null; do
+    name="${base}_${n}"
+    ((n++))
+  done
+
+  # If already inside tmux, do NOT nest a new tmux inside the pane.
+  # Instead:
+  #   1) Ensure the target session exists (create detached in this directory),
+  #   2) Switch the current tmux client to that session.
+  if [[ -n "$TMUX" ]]; then
+    command tmux new-session -d -s "$name" -c "$PWD"
+    command tmux switch-client -t "$name"
+  else
+    # Outside tmux: create and attach to the new session in this directory.
+    command tmux new-session -s "$name" -c "$PWD"
+  fi
 }
+
 
 #######################################################
 # Set the ultimate amazing command prompt
