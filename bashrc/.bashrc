@@ -728,6 +728,26 @@ tmux() {
     command tmux new-session -s "$name" -c "$PWD"
   fi
 }
+# -----------------------------------------------------------------------------
+# Obsidian Notes
+# -----------------------------------------------------------------------------
+# Open Windows-hosted Obsidian WorkNotes vault in nvim (notes) 
+notes() {
+  local whome
+  whome="$(wslpath "$(cmd.exe /c echo %USERPROFILE% 2>/dev/null | tr -d '\r')")"
+  local v="$whome/Obsidian/obsidian-vault"
+  cd "$v" && nvim
+}
+
+dnotes() {
+  local whome
+  whome="$(wslpath "$(cmd.exe /c echo %USERPROFILE% 2>/dev/null | tr -d '\r')")"
+  local v="$whome/Obsidian/obsidian-vault"
+  local f="$v/Daily/$(date +%F).md"
+  mkdir -p "${f%/*}"
+  cd "$v" && nvim "$f"
+}
+
 
 
 #######################################################
