@@ -148,6 +148,16 @@ vim.keymap.set(
 	{ desc = "Substitute (replace) word under cursor in whole file" }
 )
 
+-- Enable diff in all windows in the current tab
+vim.api.nvim_create_user_command("DiffOn", function()
+	vim.cmd("windo diffthis")
+end, {})
+
+-- Exit diff in all windows
+vim.api.nvim_create_user_command("DiffOff", function()
+	vim.cmd("windo diffoff!")
+end, {})
+
 -- Copy current file name
 vim.keymap.set("n", "<leader>cn", function()
 	vim.fn.setreg("+", vim.fn.expand("%:t"))
