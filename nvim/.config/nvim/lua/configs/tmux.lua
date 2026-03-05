@@ -119,6 +119,11 @@ end
 -- Lazygit
 ----------------------------------------------------------------
 local function open_lazygit_tmux_window()
+	-- Outside tmux: fall back to lazygit.nvim floating window at git root
+	if not vim.env.TMUX or vim.env.TMUX == "" then
+		vim.cmd("LazyGitCurrentFile")
+		return
+	end
 	open_tmux_tool_window({
 		cmd = "lazygit",
 		window_name = "lazygit",
