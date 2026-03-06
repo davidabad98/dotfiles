@@ -29,7 +29,16 @@ return {
 					lsp_indicator, -- icon + "LSP" when active
 				},
 				lualine_y = { "progress" },
-				lualine_z = { "location" },
+				lualine_z = {
+					"location",
+					function()
+						local ok, opencode = pcall(require, "opencode")
+						if not ok then
+							return ""
+						end
+						return opencode.statusline()
+					end,
+				},
 			},
 		})
 	end,
