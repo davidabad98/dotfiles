@@ -18,7 +18,7 @@ return {
       lsp = {
         enabled = true,
         watch_progress = true,  -- Phase 2: show bar during LSP indexing
-        watch_requests = false, -- Phase 3: enabled after keymap wiring
+        watch_requests = true,  -- Phase 3: precise clear via LspRequest autocmd
       },
       telescope = {
         enabled = true,
