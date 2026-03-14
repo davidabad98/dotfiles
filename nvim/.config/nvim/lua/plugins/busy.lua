@@ -19,6 +19,9 @@ return {
         enabled = true,
         animate_counter = true,
       },
+      cmdline = {
+        enabled = true,
+      },
     })
   end,
 }
