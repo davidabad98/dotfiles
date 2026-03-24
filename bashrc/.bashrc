@@ -749,6 +749,26 @@ dnotes() {
 }
 
 
+# -----------------------------------------------------------------------------
+# Trash CLI
+# -----------------------------------------------------------------------------
+# Cautious Emptytrash with a confirmation prompt
+emptytrash() {
+  local trash_dir="$HOME/.local/share/Trash"
+
+  read -r -p "Empty trash at $trash_dir? [y/N] " reply
+  case "$reply" in
+    [yY]|[yY][eE][sS]) ;;
+    *) echo "Aborted."; return 1 ;;
+  esac
+
+  /bin/rm -rf "$trash_dir/files" "$trash_dir/info"
+  mkdir -p "$trash_dir/files" "$trash_dir/info"
+
+  echo "Trash emptied."
+  du -sh "$trash_dir"
+}
+
 
 #######################################################
 # Set the ultimate amazing command prompt
