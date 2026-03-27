@@ -30,6 +30,7 @@ vim.opt.termguicolors = true -- Enable 24-bit colors
 vim.opt.splitbelow = true -- Split below
 vim.opt.splitright = true -- Split right
 vim.opt.colorcolumn = "88" -- Enable vertical ruler line
+vim.opt.fillchars:append({ eob = " " }) -- Hide ~ on empty lines below buffer
 
 -- ========== Keymaps ==========
 
