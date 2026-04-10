@@ -809,4 +809,4 @@ export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
 
 # opencode
-export PATH=/home/david/.opencode/bin:$PATH
+export PATH=$HOME/.opencode/bin:$PATH

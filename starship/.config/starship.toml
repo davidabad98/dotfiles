@@ -1,7 +1,11 @@
 format = """
 [](#3B4252)\
+$os\
 $python\
 $username\
+([](fg:#3B4252 bg:#D08770)\
+$hostname\
+[](fg:#D08770 bg:#434C5E))\
 [](bg:#434C5E fg:#3B4252)\
 $directory\
 [](fg:#434C5E bg:#4C566A)\
@@ -34,8 +38,7 @@ command_timeout = 5000
 show_always = true
 style_user = "bg:#3B4252"
 style_root = "bg:#3B4252"
-format = '[💀 $user ]($style)'
-#format = '[ ]($style)'
+format = '[ $user ]($style)'
 
 [directory]
 style = "bg:#434C5E"
@@ -129,3 +132,18 @@ disabled = false
 time_format = "%R" # Hour:Minute Format
 #style = "bg:#b03838"
 format = '[$time ]($style)'
+
+[os]
+disabled = false
+style = "bg:#3B4252"
+format = '[$symbol]($style)'
+
+[os.symbols]
+Ubuntu = " "
+Debian = " "
+
+[hostname]
+ssh_only = true
+style = "bg:#D08770 fg:#2E3440"
+format = '[ 󰣀 $hostname ]($style)'
+disabled = false
