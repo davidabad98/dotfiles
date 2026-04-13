@@ -4,7 +4,11 @@ return {
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
 		config = function()
-			require("nvim-treesitter.configs").setup({
+			local ok, ts = pcall(require, "nvim-treesitter.config")
+			if not ok then
+				ts = require("nvim-treesitter.configs")
+			end
+			ts.setup({
 				auto_install = true,
 				--ensure_installed = { "lua", "vim", "vimdoc", "query", "javascript", "python",
 				--            "c_sharp", "razor", "html", "sql", "json", "markdown",
