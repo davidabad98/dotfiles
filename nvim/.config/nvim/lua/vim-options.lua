@@ -25,6 +25,13 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Clear search when pressin
 -- ========== Clipboard ==========
 vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 
+-- WSL2: force win32yank so paste uses --lf, stripping \r from Windows clipboard.
+-- xclip (if installed) would be picked first but does not strip \r, causing ^M
+-- in Neovim buffers. This guard is a no-op on non-WSL machines.
+if vim.fn.has("wsl") == 1 then
+  vim.g.clipboard = "win32yank"
+end
+
 -- ========== UI ==========
 vim.opt.termguicolors = true -- Enable 24-bit colors
 vim.opt.splitbelow = true -- Split below
