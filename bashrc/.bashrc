@@ -704,4 +704,4 @@ export PATH="$DOTNET_ROOT:$PATH"
 . "$HOME/.local/share/../bin/env"
 
 # opencode
-export PATH=/home/david/.opencode/bin:$PATH
+export PATH=$HOME/.opencode/bin:$PATH
