@@ -2,7 +2,7 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.8",
+		tag = "0.1.9",
 		dependencies = { "nvim-lua/plenary.nvim" },
 
 		-- Use opts so lazy.nvim merges/handles setup for us

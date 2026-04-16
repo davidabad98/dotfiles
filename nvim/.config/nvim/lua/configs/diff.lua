@@ -39,17 +39,15 @@ local function pick_and_diff()
 		no_ignore = true,
 
 		-- fd: include hidden, optionally include ignored, and exclude .git directory
-		find_command = vim.fn.executable("fd") == 1
-				and {
-					"fd",
-					"--type",
-					"f",
-					"--hidden",
-					"--no-ignore", -- comment this out if you DON'T want ignored files
-					"--exclude",
-					".git",
-				}
-			or nil,
+		find_command = vim.fn.executable("fd") == 1 and {
+			"fd",
+			"--type",
+			"f",
+			"--hidden",
+			"--no-ignore", -- comment this out if you DON'T want ignored files
+			"--exclude",
+			".git",
+		} or nil,
 
 		attach_mappings = function(prompt_bufnr, _)
 			local actions = require("telescope.actions")
@@ -145,9 +143,11 @@ vim.opt.fillchars:append({ diff = "╱" })
 
 vim.api.nvim_create_autocmd("ColorScheme", {
 	callback = function()
-		-- Darken deleted/filler area (DiffDelete often affects the filler)
-		-- Use fg only to dim the slashes; keep bg untouched so it stays subtle.
-		vim.api.nvim_set_hl(0, "DiffDelete", { fg = "#555555", bg = "NONE" })
+		-- Darken deleted/filler area (DiffDelete often affects the filler).
+		-- Read the theme's background first so we preserve the red while only
+		-- dimming the fg of the ╱ slash character.
+		local hl = vim.api.nvim_get_hl(0, { name = "DiffDelete", link = false })
+		vim.api.nvim_set_hl(0, "DiffDelete", { fg = "#555555", bg = hl.bg })
 
 		-- Optional: also tone down these if they're too bright
 		-- vim.api.nvim_set_hl(0, "DiffAdd",    { fg = "#335533", bg = "NONE" })

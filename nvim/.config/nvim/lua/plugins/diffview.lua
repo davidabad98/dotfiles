@@ -4,14 +4,38 @@ return {
 	dependencies = {
 		"nvim-lua/plenary.nvim", -- required
 	},
-	event = "VeryLazy", -- load after startup, so keymaps are always available
+	lazy = false, -- must be eager: mergetool calls `nvim -c "DiffviewOpen"` before VeryLazy fires
 	config = function()
 		local diffview = require("diffview")
 
+		-- Highlight groups for conflict markers in the RESULT buffer.
+		-- Defined here so they are available when diff_buf_read fires.
+		-- Green = ours (HEAD), yellow = separator, blue = theirs (incoming).
+		vim.api.nvim_set_hl(0, "ConflictMarkerOurs", { bg = "#2d4a2d", fg = "#89d988", bold = true })
+		vim.api.nvim_set_hl(0, "ConflictMarkerSep", { bg = "#4a4a2d", fg = "#d9d988", bold = true })
+		vim.api.nvim_set_hl(0, "ConflictMarkerTheirs", { bg = "#2d2d4a", fg = "#8888d9", bold = true })
+
 		diffview.setup({
-			-- These are nice defaults; tweak later if you want.
-			enhanced_diff_hl = true, -- better diff highlighting :contentReference[oaicite:0]{index=0}
+			enhanced_diff_hl = true, -- better diff highlighting
 			use_icons = true, -- assumes you already have nvim-web-devicons
+			view = {
+				-- Merge tool layout: OURS (HEAD) | THEIRS on top, RESULT (editable) on bottom.
+				merge_tool = {
+					layout = "diff3_mixed",
+					disable_diagnostics = true, -- avoid noise while resolving conflicts
+					winbar_info = true, -- shows LOCAL / BASE / REMOTE labels in winbar
+				},
+			},
+			hooks = {
+				diff_buf_read = function(_)
+					-- Highlight conflict marker lines in whichever buffer has them.
+					-- Safe to apply to all diff buffers: the patterns only match in
+					-- the RESULT (working tree) buffer, so reference panes are unaffected.
+					vim.fn.matchadd("ConflictMarkerOurs", [[^<<<<<<<.*]], 20)
+					vim.fn.matchadd("ConflictMarkerSep", [[^=======.*]], 20)
+					vim.fn.matchadd("ConflictMarkerTheirs", [[^>>>>>>>.*]], 20)
+				end,
+			},
 		})
 
 		-- Global keymap helper (similar style to your gitsigns setup)
@@ -64,6 +88,6 @@ return {
 		-------------------------------------------------------------------------
 		-- Compare current working tree against HEAD (edit this if you prefer another base).
 		-- From docs: :DiffviewOpen [git rev] compares against that revision. :contentReference[oaicite:7]{index=7}
-		map("n", "<leader>gvh", "<cmd>DiffviewOpen HEAD<CR>", "Diffview: changes since HEAD")
+		map("n", "<leader>gvh", "<cmd>DiffviewOpen HEAD<CR>", "Diffview: changes since HEAD (current file changes)")
 	end,
 }
