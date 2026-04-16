@@ -1,131 +1,207 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = true
+
+# switched from 'nordic'
+palette = 'catppuccin_mocha'
+
 format = """
-[](#3B4252)\
-$python\
+[╭─](bold green_bright)\
+$nix_shell\
 $username\
-[](bg:#434C5E fg:#3B4252)\
+$hostname\
+$localip\
+$shlvl\
 $directory\
-[](fg:#434C5E bg:#4C566A)\
 $git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
 $git_status\
-[](fg:#4C566A bg:#86BBD8)\
-$c\
-$elixir\
-$elm\
-$golang\
-$haskell\
-$java\
-$julia\
-$nodejs\
-$nim\
-$rust\
-[](fg:#86BBD8 bg:#06969A)\
-$docker_context\
-[](fg:#06969A bg:#33658A)\
-[ ](fg:#33658A)\
-$time\
-"""
+$direnv\
+$env_var\
+$custom\
+$cmd_duration\
+$jobs\
+$os\
+$container\
+$netns\
+$shell\
+$fill\
+$all\
+$line_break\
+[╰─](bold green_bright)\
+$character\
+$status\
+$sudo"""
 
-command_timeout = 5000
-# Disable the blank line at the start of the prompt
-# add_newline = false
+[fill]
+symbol = ' '
 
-# You can also replace your username with a neat symbol like  to save some space
-[username]
-show_always = true
-style_user = "bg:#3B4252"
-style_root = "bg:#3B4252"
-format = '[💀 $user ]($style)'
-#format = '[ ]($style)'
+[direnv]
+disabled = true
+
+[package]
+disabled = true
+
+# left
+# ------------------------------------------
+
+[character]
+success_symbol = '[](bold green_bright)'
+error_symbol = '[](bold red_bright)'
+
+[cmd_duration]
+format = ' [ $duration](bold yellow_bright) '
+show_milliseconds = true
 
 [directory]
-style = "bg:#434C5E"
-format = "[ $path ]($style)"
-truncation_length = 3
-truncation_symbol = "…/"
-
-# Here is how you can shorten some long paths by text replacement
-# similar to mapped_locations in Oh My Posh:
-[directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = " "
-"Pictures" = " "
-# Keep in mind that the order matters. For example:
-# "Important Documents" = "  "
-# will not be replaced, because "Documents" was already substituted before.
-# So either put "Important Documents" before "Documents" or use the substituted version:
-# "Important  " = "  "
-
-[c]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[docker_context]
-symbol = " "
-style = "bg:#06969A"
-format = '[ $symbol $context ]($style)$path'
-
-[elixir]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
-
-[elm]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+truncation_symbol = ''
+read_only = " "
+style = 'bold cyan_bright dimmed'
 
 [git_branch]
-symbol = ""
-style = "bg:#4C566A"
-format = '[ $symbol $branch ]($style)'
+format = '[$symbol$branch(:$remote_branch)](bold magenta_bright dimmed)'
 
 [git_status]
-style = "bg:#4C566A"
-format = '[$all_status$ahead_behind ]($style)'
+style = 'bold magenta_bright dimmed'
+
+[nix_shell]
+format = '[ ](bold white0_reduce_blue)'
+
+[status]
+disabled = false
+format = '[$status](bold red_base) '
+
+[sudo]
+disabled = false
+format = '[ sudo: ](bold red_bright)'
+
+# right
+# ------------------------------------------
+
+[docker_context]
+format = ' [ $context](bold blue1) '
+
+[dotnet]
+format = '[ ($version )](bold blue0) '
+version_format = 'v${major}.${minor}'
 
 [golang]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+format = '[ $version](bold cyan_bright) '
+version_format = 'v${major}.${minor}'
 
-[haskell]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+[gradle]
+format = '[ ($version)](bold green_bright) '
+version_format = 'v${major}.${minor}'
 
 [java]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+format = '[ ${version}](bold red_bright) '
+version_format = 'v${major}.${minor}'
 
-[julia]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+[lua]
+format = '[ $version](bold yellow_bright) '
+version_format = 'v${major}.${minor}'
 
 [nodejs]
-symbol = ""
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+format = ' [ ($version)](bold green_bright) '
+version_format = 'v${major}.${minor}'
 
-[nim]
-symbol = " "
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+[pulumi]
+format = ' [󰆦 ($username@)$stack](bold yellow_bright) '
+version_format = 'v${major}.${minor}'
 
 [python]
-style = "bg:#3B4252"
-format = '[(\($virtualenv\) )]($style)'
+format = ' [ ${pyenv_prefix}(${version} )(\($virtualenv\) )](bold green_bright) '
+version_format = 'v${major}.${minor}'
 
 [rust]
-symbol = ""
-style = "bg:#86BBD8"
-format = '[ $symbol ($version) ]($style)'
+format = ' [󱘗 $version](bold orange_bright) '
+version_format = 'v${major}.${minor}'
 
-[time]
-disabled = false
-time_format = "%R" # Hour:Minute Format
-#style = "bg:#b03838"
-format = '[$time ]($style)'
+[terraform]
+format = ' [󰆩 $workspace](bold magenta_bright) '
+version_format = 'v${major}.${minor}'
+
+# Palette
+# ------------------------------------------
+[palettes.catppuccin_mocha]
+# --- Official Catppuccin Mocha keys (nice to have if you later want to style with "mauve", "peach", etc.) ---
+rosewater = "#f5e0dc"
+flamingo  = "#f2cdcd"
+pink      = "#f5c2e7"
+mauve     = "#cba6f7"
+red       = "#f38ba8"
+maroon    = "#eba0ac"
+peach     = "#fab387"
+yellow    = "#f9e2af"
+green     = "#a6e3a1"
+teal      = "#94e2d5"
+sky       = "#89dceb"
+sapphire  = "#74c7ec"
+blue      = "#89b4fa"
+lavender  = "#b4befe"
+text      = "#cdd6f4"
+subtext1  = "#bac2de"
+subtext0  = "#a6adc8"
+overlay2  = "#9399b2"
+overlay1  = "#7f849c"
+overlay0  = "#6c7086"
+surface2  = "#585b70"
+surface1  = "#45475a"
+surface0  = "#313244"
+base      = "#1e1e2e"
+mantle    = "#181825"
+crust     = "#11111b"
+
+# --- Nordic-compatible aliases (so your existing styles keep working) ---
+black0 = "#11111b" # crust
+black1 = "#181825" # mantle
+black2 = "#1e1e2e" # base
+
+gray0 = "#313244"  # surface0
+gray1 = "#45475a"  # surface1
+gray2 = "#585b70"  # surface2
+gray3 = "#6c7086"  # overlay0
+gray4 = "#7f849c"  # overlay1
+gray5 = "#9399b2"  # overlay2
+
+white0_normal      = "#cdd6f4" # text
+white0_reduce_blue = "#bac2de" # subtext1
+white1             = "#a6adc8" # subtext0
+white2             = "#f5e0dc" # rosewater
+white3             = "#f2cdcd" # flamingo
+
+blue0 = "#89b4fa"  # blue
+blue1 = "#74c7ec"  # sapphire
+blue2 = "#89dceb"  # sky
+
+cyan_base   = "#94e2d5" # teal
+cyan_bright = "#89dceb" # sky
+cyan_dim    = "#74c7ec" # sapphire
+
+red_base   = "#eba0ac" # maroon (slightly softer for status)
+red_bright = "#f38ba8" # red
+red_dim    = "#eba0ac" # maroon
+
+orange_base   = "#fab387" # peach
+orange_bright = "#fab387" # peach
+orange_dim    = "#fab387" # peach
+
+yellow_base   = "#f9e2af" # yellow
+yellow_bright = "#f9e2af" # yellow
+yellow_dim    = "#f9e2af" # yellow
+
+green_base   = "#a6e3a1" # green
+green_bright = "#a6e3a1" # green
+green_dim    = "#a6e3a1" # green
+
+magenta_base   = "#b4befe" # lavender
+magenta_bright = "#cba6f7" # mauve
+magenta_dim    = "#b4befe" # lavender
+
+# (Optional) keep your old palette below if you want quick toggling:
+# palette = 'nordic'
+# [palettes.nordic]
+# ...
+
