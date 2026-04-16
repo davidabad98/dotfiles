@@ -82,12 +82,21 @@ return {
 				end
 
 				-- Navigation
-				map("n", "gd", vim.lsp.buf.definition, "Goto Definition")
-				map("n", "gD", vim.lsp.buf.declaration, "Goto Declaration")
-				map("n", "gi", vim.lsp.buf.implementation, "Goto Implementation")
-				map("n", "gr", vim.lsp.buf.references, "Goto References")
-				map("n", "K", vim.lsp.buf.hover, "Hover Documentation")
-				map("n", "gk", vim.lsp.buf.signature_help, "Signature Help")
+				-- Wrap LSP navigation functions with nvim-busy so the loading
+				-- indicator appears while waiting for the server to respond.
+				-- Graceful degradation: if nvim-busy is not loaded, wrap() is a
+				-- transparent pass-through and keymaps work exactly as before.
+				local ok_busy, busy = pcall(require, "busy")
+				local w = ok_busy and busy.wrap or function(fn)
+					return fn
+				end
+
+				map("n", "gd", w(vim.lsp.buf.definition, "lsp:gd"), "Goto Definition")
+				map("n", "gD", w(vim.lsp.buf.declaration, "lsp:gD"), "Goto Declaration")
+				map("n", "gi", w(vim.lsp.buf.implementation, "lsp:gi"), "Goto Implementation")
+				map("n", "gr", w(vim.lsp.buf.references, "lsp:gr"), "Goto References")
+				map("n", "K", w(vim.lsp.buf.hover, "lsp:K"), "Hover Documentation")
+				map("n", "gk", w(vim.lsp.buf.signature_help, "lsp:gk"), "Signature Help")
 
 				-- Refactor / workspace
 				map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
@@ -203,7 +212,7 @@ return {
 				"roslyn",
 				"--stdio",
 				"--logLevel=Information",
-				"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.get_log_path()),
+				"--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.log.get_filename()),
 				"--razorSourceGenerator=" .. vim.fs.joinpath(rzls_path, "Microsoft.CodeAnalysis.Razor.Compiler.dll"),
 				"--razorDesignTimePath="
 					.. vim.fs.joinpath(rzls_path, "Targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets"),

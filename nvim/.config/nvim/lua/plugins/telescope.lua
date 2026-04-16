@@ -2,12 +2,22 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.8",
+		tag = "0.1.9",
 		dependencies = { "nvim-lua/plenary.nvim" },
 
 		-- Use opts so lazy.nvim merges/handles setup for us
 		opts = {
 			defaults = {
+				-- animated busy spinner in the prompt counter
+				get_status_text = function(self, opts)
+					local ok, busy_ts = pcall(require, "busy.telescope")
+					if ok then
+						return busy_ts.get_status_text(self, opts)
+					end
+					-- fallback: return nil so Telescope uses its built-in behaviour
+					return nil
+				end,
+
 				-- horizontal, prompt on top
 				layout_strategy = "horizontal",
 				layout_config = {

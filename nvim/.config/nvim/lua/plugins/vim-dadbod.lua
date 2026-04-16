@@ -3,11 +3,13 @@
 return {
 	{
 		"tpope/vim-dadbod",
+		enabled = false,
 		lazy = true,
 		cmd = { "DB", "DBUI", "DBUIToggle", "DBUIAddConnection", "DBUIFindBuffer" },
 	},
 	{
 		"kristijanhusak/vim-dadbod-ui",
+		enabled = false,
 		dependencies = {
 			"tpope/vim-dadbod",
 			-- completion engine (nvim-cmp)
@@ -34,6 +36,7 @@ return {
 	{
 		-- Completion wiring for SQL buffers
 		"kristijanhusak/vim-dadbod-completion",
+		enabled = false,
 		ft = { "sql", "mysql", "plsql" },
 		init = function()
 			-- If you use nvim-cmp, add dadbod source for SQL filetypes:

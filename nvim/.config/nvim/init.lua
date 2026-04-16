@@ -17,4 +17,5 @@ vim.opt.rtp:prepend(lazypath)
 
 require("vim-options")
 require("configs.tmux")
+require("configs.diff")
 require("lazy").setup("plugins")

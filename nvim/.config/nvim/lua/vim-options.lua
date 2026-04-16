@@ -25,11 +25,19 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>") -- Clear search when pressin
 -- ========== Clipboard ==========
 vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 
+-- WSL2: force win32yank so paste uses --lf, stripping \r from Windows clipboard.
+-- xclip (if installed) would be picked first but does not strip \r, causing ^M
+-- in Neovim buffers. This guard is a no-op on non-WSL machines.
+if vim.fn.has("wsl") == 1 then
+	vim.g.clipboard = "win32yank"
+end
+
 -- ========== UI ==========
 vim.opt.termguicolors = true -- Enable 24-bit colors
 vim.opt.splitbelow = true -- Split below
 vim.opt.splitright = true -- Split right
 vim.opt.colorcolumn = "88" -- Enable vertical ruler line
+vim.opt.fillchars:append({ eob = " " }) -- Hide ~ on empty lines below buffer
 
 -- ========== Keymaps ==========
 
@@ -148,6 +156,16 @@ vim.keymap.set(
 	{ desc = "Substitute (replace) word under cursor in whole file" }
 )
 
+-- Enable diff in all windows in the current tab
+vim.api.nvim_create_user_command("DiffOn", function()
+	vim.cmd("windo diffthis")
+end, {})
+
+-- Exit diff in all windows
+vim.api.nvim_create_user_command("DiffOff", function()
+	vim.cmd("windo diffoff!")
+end, {})
+
 -- Copy current file name
 vim.keymap.set("n", "<leader>cn", function()
 	vim.fn.setreg("+", vim.fn.expand("%:t"))
@@ -215,6 +233,45 @@ vim.api.nvim_create_autocmd("CursorHold", {
 		vim.diagnostic.open_float(nil, { focus = false })
 	end,
 })
+
+-- ========== Background Transparency ==========
+vim.g.background_transparent = true -- matches catppuccin's default transparent_background = true
+
+local theme_transparency_handlers = {
+	["catppuccin-mocha"] = function(enabled)
+		require("catppuccin").setup(vim.tbl_deep_extend("force", require("catppuccin").options or {}, {
+			transparent_background = enabled,
+		}))
+	end,
+	-- kanagawa = function(enabled) require("kanagawa").setup({ transparent = enabled }) end,
+	-- tokyonight = function(enabled) require("tokyonight").setup({ transparent = enabled }) end,
+}
+
+local function set_transparency(enabled)
+	vim.g.background_transparent = enabled
+	local theme = vim.g.colors_name
+	local handler = theme_transparency_handlers[theme]
+	if handler then
+		handler(enabled)
+	else
+		vim.notify("No transparency handler for theme: " .. (theme or "unknown"), vim.log.levels.WARN)
+		return
+	end
+	vim.cmd("colorscheme " .. theme)
+	print("Background transparency: " .. (enabled and "ON" or "OFF"))
+end
+
+vim.api.nvim_create_user_command("BackgroundTransparencyOn", function()
+	set_transparency(true)
+end, { desc = "Enable terminal background transparency" })
+
+vim.api.nvim_create_user_command("BackgroundTransparencyOff", function()
+	set_transparency(false)
+end, { desc = "Disable terminal background transparency" })
+
+vim.keymap.set("n", "<leader>tb", function()
+	set_transparency(not vim.g.background_transparent)
+end, { desc = "Toggle background transparency" })
 
 -- Background color for DAP cursorline
 vim.api.nvim_set_hl(0, "DapStoppedLine", {

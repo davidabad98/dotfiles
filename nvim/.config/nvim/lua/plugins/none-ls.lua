@@ -20,7 +20,7 @@ return {
 
 				on_attach = function(client, bufnr)
 					if
-						client.supports_method and client.supports_method("textDocument/formatting")
+						client.supports_method and client:supports_method("textDocument/formatting")
 						or (client.server_capabilities and client.server_capabilities.documentFormattingProvider)
 					then
 						local grp = vim.api.nvim_create_augroup("NullLsFormat." .. bufnr, { clear = true })
