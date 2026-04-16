@@ -784,8 +784,19 @@ if [[ $- == *i* ]]; then
     bind '"\C-f":"zi\n"'
 fi
 
-export PATH=$PATH:"$HOME/.local/bin:$HOME/.cargo/bin:/var/lib/flatpak/exports/bin:/.local/share/flatpak/exports/bin"
+# Consolidate PATH: local/user bins first so they take precedence over system binaries
+export PATH="$HOME/.local/bin:$HOME/bin:$HOME/.opencode/bin:$HOME/.cargo/bin:$HOME/.dotnet:/var/lib/flatpak/exports/bin:/.local/share/flatpak/exports/bin:$PATH"
+export DOTNET_ROOT="$HOME/.dotnet"
 
+# Optional tools (machine-specific, safe to skip if not installed)
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+export PATH="$PATH:/opt/mssql-tools18/bin"
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Init prompt and zoxide AFTER PATH is fully set so ~/.local/bin takes precedence
 eval "$(starship init bash)"
 eval "$(zoxide init bash)"
 
@@ -794,19 +805,3 @@ if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
 exec startx
 
 fi
-
-
-
-export PATH="$HOME/.local/bin:$PATH"
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH="$PATH:/opt/mssql-tools18/bin"
-export PATH="$HOME/bin:$PATH"
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$DOTNET_ROOT:$PATH"
-
-# opencode
-export PATH=$HOME/.opencode/bin:$PATH
