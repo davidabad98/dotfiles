@@ -805,3 +805,26 @@ if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
 exec startx
 
 fi
+
+
+
+export PATH="$HOME/.local/bin:$PATH"
+# Load fzf key bindings and completions (handles git-install and package-manager installs)
+if [ -f ~/.fzf.bash ]; then
+    source ~/.fzf.bash                                          # git-install method
+elif [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+    source /usr/share/doc/fzf/examples/key-bindings.bash       # apt-install (debian/ubuntu)
+elif [ -f /usr/share/fzf/key-bindings.bash ]; then
+    source /usr/share/fzf/key-bindings.bash                    # apt-install (arch/fedora)
+fi
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export PATH="$PATH:/opt/mssql-tools18/bin"
+export PATH="$HOME/bin:$PATH"
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$PATH"
+
+# opencode
+export PATH=$HOME/.opencode/bin:$PATH
