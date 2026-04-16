@@ -1,5 +1,37 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "github-copilot/claude-sonnet-4.6",
-  "small_model": "github-copilot/claude-haiku-4.5"
+  "small_model": "github-copilot/claude-haiku-4.5",
+  "provider": {
+    "ollama-lab": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DGX Ollama (lab)",
+      "options": {
+        "baseURL": "http://192.168.13.165:11434/v1",
+
+        // Some OpenAI clients require an apiKey even if unused; Ollama notes this is "required but ignored".
+        "apiKey": "ollama",
+
+        // Optional: big local models can be slow; increase timeout if you hit timeouts.
+        "timeout": 900000
+      },
+
+      "models": {
+        "devstral-2:latest": { "name": "devstral-2 (latest)" },
+        "gpt-oss:120b": { "name": "gpt-oss 120B" },
+        "glm-4.7-flash:latest": { "name": "glm-4.7-flash (latest)" },
+        "glm-4.7-flash:bf16": { "name": "glm-4.7-flash (bf16)" },
+        "nemotron-3-nano:latest": { "name": "nemotron-3-nano (latest)" }
+      }
+    }
+  },
+  //"model": "ollama-lab/devstral-2:latest",
+  //"small_model": "ollama-lab/glm-4.7-flash:latest",
+  "mcp": {
+    "identityserver": {
+      "type": "local",
+      "command": ["docker", "exec", "-i", "identityserver-mcp", "node", "dist/server.js"],
+      "enabled": true
+    }
+  }
 }
