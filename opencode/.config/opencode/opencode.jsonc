@@ -52,9 +52,9 @@
 
   "mcp": {
     "identityserver": {
-      "type": "local",
-      "command": ["docker", "exec", "-i", "identityserver-mcp", "node", "dist/server.js"],
-      "enabled": true
+      "type": "remote",
+      "url": "http://192.168.13.163:3457/mcp",
+      "enabled": false
     }
   }
 }
