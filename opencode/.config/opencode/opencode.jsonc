@@ -21,12 +21,35 @@
         "gpt-oss:120b": { "name": "gpt-oss 120B" },
         "glm-4.7-flash:latest": { "name": "glm-4.7-flash (latest)" },
         "glm-4.7-flash:bf16": { "name": "glm-4.7-flash (bf16)" },
-        "nemotron-3-nano:latest": { "name": "nemotron-3-nano (latest)" }
+        "nemotron-3-nano:latest": { "name": "nemotron-3-nano (latest)" },
+        "nemotron-cascade-2:latest": { "name": "nemotron-cascade-2 (30B MoE, thinking)" }
+      }
+    },
+
+    "llamacpp-lab": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DGX llama.cpp (lab)",
+      "options": {
+        "baseURL": "http://192.168.13.165:30000/v1",
+
+        // llama-server requires a non-empty apiKey field but ignores its value.
+        "apiKey": "none",
+
+        // BF16 full-precision model is slower (~4 tok/s); generous timeout to avoid mid-generation drops.
+        "timeout": 900000
+      },
+
+      "models": {
+        "gemma-4-31B-it-bf16.gguf": { "name": "Gemma 4 31B IT (BF16, llama.cpp)" }
       }
     }
   },
+
+  // Uncomment to switch default model to a local one:
   //"model": "ollama-lab/devstral-2:latest",
+  //"model": "llamacpp-lab/gemma-4-31B-it-bf16.gguf",
   //"small_model": "ollama-lab/glm-4.7-flash:latest",
+
   "mcp": {
     "identityserver": {
       "type": "local",
