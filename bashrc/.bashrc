@@ -139,6 +139,20 @@ fkill() {
   ps -ef | sed 1d | fzf -m | awk '{print $2}' | xargs -r kill -9
 }
 
+# Helper for searchable ssh entries
+sshf() {
+    local host
+    host=$(awk '
+        $1 == "Host" && $2 !~ /[*?]/ {
+            print $2
+        }
+    ' ~/.ssh/config | fzf --prompt="SSH host> ")
+
+    if [ -n "$host" ]; then
+        ssh "$host"
+    fi
+}
+
 
 #######################################################
 # MACHINE SPECIFIC ALIAS'S
