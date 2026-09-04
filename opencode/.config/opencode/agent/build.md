@@ -29,10 +29,10 @@ Refuse to reuse an existing branch or non-empty worktree without explicit user
 direction. The original shared checkout must remain untouched except for
 read-only inspection and the native `git worktree` operation.
 
-Use `using-agent-skills` to select the phase-appropriate skills. Normally use
-`context-engineering`, `incremental-implementation`, `test-driven-development`,
-`git-workflow-and-versioning`, and only task-triggered API, security,
-observability, UI, browser, performance, debugging, or documentation skills.
+Use `using-agent-skills` to select phase-appropriate skills. Load a skill only
+when it contributes task-specific instructions not already contained in the
+applicable repository rules. Do not load a generic default bundle merely
+because this is a coding task.
 
 Implement the approved scope in small slices. Run focused checks after
 meaningful slices. Do not routinely run `pre-commit --all-files`, every

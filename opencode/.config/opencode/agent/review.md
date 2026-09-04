@@ -6,6 +6,12 @@ permission:
   edit: deny
   bash:
     "*": ask
+    "git status*": allow
+    "git diff*": allow
+    "git show*": allow
+    "git log*": allow
+    "git rev-parse*": allow
+    "git ls-files*": allow
     "git add*": deny
     "git commit*": deny
     "git push*": deny
@@ -24,7 +30,9 @@ permission:
     "cp *": deny
     "* > *": deny
     "* >> *": deny
-  external_directory: ask
+  external_directory:
+    "*": ask
+    "~/.local/share/opencode/worktrees/**": allow
   webfetch: ask
 ---
 
