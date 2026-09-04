@@ -1,7 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "github-copilot/claude-sonnet-4.6",
-  "small_model": "github-copilot/claude-haiku-4.5",
+  // "model": "github-copilot/claude-sonnet-4.6",
+  // "small_model": "github-copilot/claude-haiku-4.5",
+  "model": "azure/gpt-5.6-luna",
+  "small_model": "azure/gpt-5.6-luna",
+  "default_agent": "plan",
+  "subagent_depth": 1,
   "provider": {
     "ollama-lab": {
       "npm": "@ai-sdk/openai-compatible",
@@ -54,6 +58,11 @@
     "identityserver": {
       "type": "remote",
       "url": "http://192.168.13.163:3457/mcp",
+      "enabled": false
+    },
+    "payevo": {
+      "type": "remote",
+      "url": "https://payevo-td1-b7hrf0azekhte2f4.canadacentral-01.azurewebsites.net/mcp",
       "enabled": false
     }
   }

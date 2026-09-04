@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Create an isolated native Git worktree and start OpenCode there.
+# Usage: opencode-task <work-item> <slug> [opencode arguments...]
+
+if [[ $# -lt 2 ]]; then
+    echo "Usage: opencode-task <work-item> <slug> [opencode arguments...]" >&2
+    exit 2
+fi
+
+work_item="$1"
+slug="$2"
+shift 2
+
+if [[ ! "$work_item" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ || ! "$slug" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+    echo "Work item and slug may contain only letters, numbers, '.', '_' and '-'." >&2
+    exit 2
+fi
+
+repo_root=$(git rev-parse --show-toplevel)
+repo_name=$(basename "$repo_root")
+branch="agent/$work_item-$slug"
+worktree="$HOME/.local/share/opencode/worktrees/$repo_name/$work_item-$slug"
+
+if [[ -e "$worktree" ]]; then
+    echo "Worktree already exists: $worktree" >&2
+    exit 1
+fi
+if git show-ref --verify --quiet "refs/heads/$branch"; then
+    echo "Branch already exists: $branch" >&2
+    exit 1
+fi
+
+git fetch origin
+mkdir -p "$(dirname "$worktree")"
+git worktree add -b "$branch" "$worktree" origin/main
+exec opencode "$worktree" --agent "${OPENCODE_TASK_AGENT:-build}" "$@"
