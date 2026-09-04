@@ -34,7 +34,7 @@ and ownership.
   cross-service architecture, or repository-wide tooling/validation changes.
 - Quick Fix uses a dedicated worktree when the active checkout is shared, runs
   only affected-scope checks, stages only intended files, and performs a staged
-  diff/self-check. It does not invoke independent Review or Verify agents.
+  diff/self-check. It does not invoke the independent Review agent.
 - The default agent remains `plan`; ordinary requests therefore retain the
   normal planning gate unless `/quick` is explicitly selected.
 
@@ -43,15 +43,13 @@ and ownership.
 - Validation is incremental. During implementation, run focused checks for the
   affected files or component; do not repeat a successful expensive check unless
   one of its relevant inputs changed.
-- Review happens before final expensive verification when review findings could
+- Review happens before final affected-scope checks when review findings could
   change the implementation.
-- `review` owns semantic inspection of the complete staged diff. `verify` owns
-  final executable evidence. `build` owns implementation and focused checks, not
-  routine repository-wide validation.
-- Verify must recalculate scope from the final staged paths and apply project
-  and nested `AGENTS.md` rules. A denied, failed, timed-out, unavailable, or
-  skipped required check blocks commit and push unless the user explicitly
-  accepts a documented waiver.
+- `review` owns semantic inspection of the complete staged diff. `build` owns
+  implementation, focused checks, and final executable evidence for the staged
+  scope.
+- A denied, failed, timed-out, unavailable, or skipped required check blocks
+  commit and push unless the user explicitly accepts a documented waiver.
 - Shared, CI, Docker, environment, and validation infrastructure changes
   require validation of the affected contract. Broader verification is required
   only when the change can alter multiple components, deployment/runtime
@@ -59,21 +57,28 @@ and ownership.
   whenever project rules say so.
 - A commit-time hook is a backstop, not a substitute for final evidence. If an
   auto-fixing hook changes files, inspect and stage the change, rerun affected
-  checks, rerun `verify` against the new staged candidate, and re-review
+  checks, and re-review
   high-risk or production-code deltas. Never use `git commit --no-verify` to
   save time.
-- Review and Verify shell access is not a sandbox. They must never request
-  mutation-capable commands. Read-only Git inspection is pre-approved; Verify
-  requests approval per coherent disclosed validation batch rather than before
-  every shell command. `--auto` must not be used for commands that retain
+- Review shell access is not a sandbox. It must never request mutation-capable
+  commands. `--auto` must not be used for commands that retain
   approval-gated validation or external effects.
 
 ## Lifecycle
 
-The normal lifecycle is: `plan` clarifies and plans; `build` implements an
-approved plan with focused checks; `review` performs bounded adversarial
-semantic review of the staged diff; `verify` runs final applicable checks with
-approval for disclosed validation batches; then `build` commits and pushes only
-with complete verification evidence. The explicit `/quick` lane is the bounded
-exception for eligible small fixes. Pull request creation and merge remain
-explicit user or hosting-platform actions.
+The normal lifecycle is: `plan` clarifies and plans; one explicit approval of
+the bounded plan authorizes `build` to create a unique repository-local
+worktree, implement the scope, run focused checks, stage the candidate, and
+invoke `review`. If Review reports actionable findings, Build fixes them within
+scope and requests re-review when the remediation materially changes reviewed
+behavior or is high-risk. After Review passes, Build runs the final applicable
+affected-scope checks, then commits and pushes the feature branch without asking
+for another confirmation. Build must report the changed files, exact checks and
+results, branch, commit SHA, push result, warnings, and manual PR details.
+
+Approval is required only for ambiguous requirements, material scope changes,
+credentials or secrets, sensitive external effects, destructive operations,
+force-push, merge, repository administration, or a persistent failure requiring
+a waiver. The explicit `/quick` lane is the bounded exception for eligible
+small fixes. Pull request creation and merge remain explicit user or hosting-
+platform actions.

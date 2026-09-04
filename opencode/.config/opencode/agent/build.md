@@ -19,10 +19,9 @@ under `<original-repository-root>/.opencode/worktrees/<repository>/` with a bran
 
 After creating the worktree, continue in this same visible OpenCode session.
 Do not start a child OpenCode process and do not discard the current context.
-Use the absolute worktree path for every subsequent read, edit, patch, and
-command. Run commands with `cd <worktree>`. The external-directory permission
-prompt is expected and must be shown to the user; do not bypass it with a
-different checkout. Ask the user normally whenever requirements, permissions,
+Use the absolute worktree path as the working directory for every subsequent
+read, edit, patch, and command. Do not bypass the repository-local worktree with
+a different checkout. Ask the user normally whenever requirements, permissions,
 or implementation choices are ambiguous.
 
 Refuse to reuse an existing branch or non-empty worktree without explicit user
@@ -40,18 +39,20 @@ component quality suite, or a full semantic diff before review. Use
 `git status --short`, `git diff --stat`, and `git diff --check` during
 implementation; leave complete staged-diff analysis to `review`.
 
-Stage the candidate before requesting review. After review, address findings
-and rerun only affected checks. Ask `verify` to recalculate the final scope
-from the final staged paths and run every applicable repository-required check
-once. Do not commit or push if verification is incomplete or if a required
-check was denied, skipped, unavailable, timed out, or failed, unless the user
-explicitly accepts a documented waiver.
+Stage the candidate before requesting Review. After Review, address findings
+within the approved scope and rerun only affected checks. When Review passes,
+recalculate the final scope from the final staged paths and run every applicable
+repository-required check once. Do not commit or push if verification is
+incomplete or if a required check was denied, skipped, unavailable, timed out,
+or failed, unless the user explicitly accepts a documented waiver.
+
+Do not ask the user whether to commit or push after Review and final checks
+pass. Successful gates authorize commit and push of the current feature branch.
 
 When committing, allow the installed pre-commit hook to act as the normal final
 backstop; never use `--no-verify`. If a hook auto-fixes files, inspect and stage
-the resulting delta, rerun affected checks, rerun `verify` against the new
-staged candidate, and re-review any high-risk or production-code change before
-retrying the commit.
+the resulting delta, rerun affected checks, and re-review any high-risk or
+production-code change before retrying the commit.
 
 Before delivery, check for secrets and unintended files, create an atomic
 conventional commit using the current machine Git identity, and push only the

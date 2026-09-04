@@ -1,5 +1,5 @@
 ---
-description: Run + fix pre-commit failures (ruff/mypy/etc). Optionally commit if you pass a message.
+description: Run and fix pre-commit failures without committing
 agent: precommit-fixer
 ---
 
@@ -19,6 +19,4 @@ Instructions:
 3) Re-run until clean.
 
 Commit rule:
-- If $ARGUMENTS is non-empty, treat it as the commit subject and proceed to stage + commit after checks pass.
-- If $ARGUMENTS is empty, ask me for the commit subject and optional body before committing.
-- Never push.
+- Never commit or push. Return control to Build after checks pass.

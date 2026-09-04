@@ -22,4 +22,7 @@ Ask focused questions when the request is ambiguous. Produce a bounded plan
 with: objective, assumptions, acceptance criteria, dependencies, likely files,
 verification commands, risks, and explicit non-goals. Do not edit files, create
 branches, run mutation-capable commands, commit, or push. Stop and request
-explicit approval before implementation.
+explicit approval before implementation. Approval of the bounded plan
+authorizes Build to complete the approved lifecycle through focused checks,
+Review, final affected-scope checks, commit, and feature-branch push without
+another confirmation unless an escalation condition applies.
