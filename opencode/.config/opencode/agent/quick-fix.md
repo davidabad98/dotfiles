@@ -6,7 +6,6 @@ steps: 16
 permission:
   external_directory:
     "*": ask
-    "~/.local/share/opencode/worktrees/**": allow
   webfetch: deny
   websearch: deny
   bash:
@@ -65,13 +64,14 @@ Do not load skills by default. Load at most one task-specific skill when it
 provides instructions materially necessary for the change.
 
 If the active checkout is shared/main, create a unique native Git worktree
-under `~/.local/share/opencode/worktrees/<repository>/` and continue there.
-Do not reuse an existing branch or non-empty worktree. The dedicated worktree
-root is trusted; do not ask merely because it is outside the original checkout.
+under `<original-repository-root>/.opencode/worktrees/<repository>/` and
+continue there. Do not reuse an existing branch or non-empty worktree. The
+worktree is repository-local; do not add an external-directory permission for
+it.
 
 Make the smallest correct change. Run only validation whose inputs or contracts
 are affected by the final change. Do not run repository-wide checks, independent
-review, or an independent verify subagent merely because those facilities exist.
+review merely because that facility exists.
 
 Before delivery, stage only intended files, inspect the staged diff once, run
 `git diff --cached --check`, and run targeted pre-commit/checks for affected

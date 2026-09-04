@@ -1,5 +1,5 @@
 ---
-description: Fixes pre-commit failures (ruff/format/mypy/etc) without changing runtime behavior; can stage + commit after passing.
+description: Fixes pre-commit failures without changing runtime behavior
 mode: subagent
 temperature: 0.1
 
@@ -42,8 +42,8 @@ permission:
     "pip*": ask
     "python -m pip*": ask
 
-    # Your required policy: ask before commit; never push
-    "git commit*": ask
+    # Build is the only normal commit owner; never push
+    "git commit*": deny
     "git push*": deny
 
     # Extra safety
@@ -70,13 +70,12 @@ Mypy rules:
 - Avoid broad ignores; only use targeted `# type: ignore[code]` as last resort with justification.
 
 Commit rule (required):
-- Do NOT commit unless the user provides a commit subject (and optional body).
-- If already provided in the request, stage (`git add -A`) and commit.
-- Never push.
+- Never commit or push. Return control to Build after fixing and reporting the
+  affected files and checks.
 
 Final response must include:
 - What failed initially
 - What changed (file-by-file + why)
 - Commands run
 - Why changes are non-functional
-- If committed: commit message + staged scope
+- Staged scope for Build to review and commit
