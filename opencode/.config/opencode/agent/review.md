@@ -32,7 +32,6 @@ permission:
     "* >> *": deny
   external_directory:
     "*": ask
-    "~/.local/share/opencode/worktrees/**": allow
   webfetch: ask
 ---
 

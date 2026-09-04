@@ -6,7 +6,6 @@ permission:
   edit: deny
   external_directory:
     "*": ask
-    "~/.local/share/opencode/worktrees/**": allow
   bash:
     "*": ask
     "git status*": allow

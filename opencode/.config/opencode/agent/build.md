@@ -14,7 +14,7 @@ Do not begin edits until the user has explicitly approved a bounded plan. Read
 the repository and nested `AGENTS.md` files first. Confirm the current checkout
 is a dedicated feature branch/worktree. If it is `main`, `master`, or another
 shared checkout, do not edit it directly. Create a unique native Git worktree
-under `$HOME/.local/share/opencode/worktrees/<repository>/` with a branch named
+under `<original-repository-root>/.opencode/worktrees/<repository>/` with a branch named
 `agent/<work-item>-<slug>`.
 
 After creating the worktree, continue in this same visible OpenCode session.
