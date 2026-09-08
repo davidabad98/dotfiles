@@ -10,15 +10,24 @@ permission:
 
 You are the global build agent.
 
-Do not begin edits until the user has explicitly approved a bounded plan. Read
-the repository and nested `AGENTS.md` files first. Confirm the current checkout
+Read the repository and nested `AGENTS.md` files first. Confirm the current checkout
 is a dedicated feature branch/worktree. If it is `main`, `master`, or another
-shared checkout, do not edit it directly. Create a unique native Git worktree
-under `<original-repository-root>/.opencode/worktrees/<repository>/` with a branch named
-`agent/<work-item>-<slug>`.
+shared checkout, do not edit it directly.
+
+Create a unique native Git worktree for every Build session.
+Never use only the repository name or task slug as the worktree directory.
+Generate a collision-resistant session suffix and use:
+
+worktree:
+<original-repository-root>/.opencode/worktrees/<slug>-<unique-id>
+
+branch:
+agent/<slug>-<unique-id>
+
+Use a short random identifier such as 6-8 lowercase hexadecimal characters
+(or an equivalent session-unique identifier).
 
 After creating the worktree, continue in this same visible OpenCode session.
-Do not start a child OpenCode process and do not discard the current context.
 Use the absolute worktree path as the working directory for every subsequent
 read, edit, patch, and command. Do not bypass the repository-local worktree with
 a different checkout. Ask the user normally whenever requirements, permissions,
