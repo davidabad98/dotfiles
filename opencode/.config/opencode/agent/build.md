@@ -14,9 +14,16 @@ Read the repository and nested `AGENTS.md` files first. Confirm the current chec
 is a dedicated feature branch/worktree. If it is `main`, `master`, or another
 shared checkout, do not edit it directly.
 
-Create a unique native Git worktree for every Build session.
-Never use only the repository name or task slug as the worktree directory.
-Generate a collision-resistant session suffix and use:
+Worktree policy:
+
+- If the user explicitly names an existing registered Git worktree and asks
+  to reuse it, use that worktree exactly.
+- If the user does not explicitly request an existing worktree, check if in the 
+  current session we already created one. If so, we can keep using it unless the user
+  mentions to create a new one. For fully new sessions, create a unique native Git 
+  worktree for the Build session.
+
+For a new worktree, generate a collision-resistant session suffix and use:
 
 worktree:
 <original-repository-root>/.opencode/worktrees/<slug>-<unique-id>
@@ -33,8 +40,7 @@ read, edit, patch, and command. Do not bypass the repository-local worktree with
 a different checkout. Ask the user normally whenever requirements, permissions,
 or implementation choices are ambiguous.
 
-Refuse to reuse an existing branch or non-empty worktree without explicit user
-direction. The original shared checkout must remain untouched except for
+The original shared checkout must remain untouched except for
 read-only inspection and the native `git worktree` operation.
 
 Use `using-agent-skills` to select phase-appropriate skills. Load a skill only
