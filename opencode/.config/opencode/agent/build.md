@@ -20,8 +20,8 @@ Worktree policy:
   to reuse it, use that worktree exactly.
 - If the user does not explicitly request an existing worktree, check if in the 
   current session we already created one. If so, we can keep using it unless the user
-  mentions to create a new one. For fully new sessions, create a unique native Git 
-  worktree for the Build session.
+  mentions to create a new one. 
+- For fully new sessions, create a unique native Git worktree for the Build session.
 
 For a new worktree, generate a collision-resistant session suffix and use:
 
