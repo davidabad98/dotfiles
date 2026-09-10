@@ -18,7 +18,9 @@ and ownership.
   access tokens, or credential-manager contents.
 - Use the current repository's normal Git credentials. Do not invent a
   credential mechanism or add credentials to project configuration.
-- Do not merge pull requests or change repository administration.
+- Agents may create a pull request after Review and final checks pass by using
+  the local `bitbucket-pr create` helper. Agents must not approve, decline, or
+  merge pull requests or change repository administration.
 - Keep commits focused and report intentional scope and known limitations.
 
 ## Fast Path
@@ -73,12 +75,15 @@ invoke `review`. If Review reports actionable findings, Build fixes them within
 scope and requests re-review when the remediation materially changes reviewed
 behavior or is high-risk. After Review passes, Build runs the final applicable
 affected-scope checks, then commits and pushes the feature branch without asking
-for another confirmation. Build must report the changed files, exact checks and
-results, branch, commit SHA, push result, warnings, and manual PR details.
+for another confirmation. Only after those checks pass may Build call
+`bitbucket-pr create`; it must not create a PR earlier in the lifecycle. Build
+must report the changed files, exact checks and results, branch, commit SHA,
+push result, pull-request result, and warnings.
 
 Approval is required only for ambiguous requirements, material scope changes,
 credentials or secrets, sensitive external effects, destructive operations,
 force-push, merge, repository administration, or a persistent failure requiring
 a waiver. The explicit `/quick` lane is the bounded exception for eligible
-small fixes. Pull request creation and merge remain explicit user or hosting-
-platform actions.
+small fixes. Pull request creation is an automated post-review delivery step;
+merge and repository administration remain protected user or hosting-platform
+actions.

@@ -52,6 +52,13 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
 
+# Keep GPG pinentry attached to the current terminal for pass/GPG-backed
+# credentials. This prepares gpg-agent; it does not unlock or print secrets.
+if command -v gpg-connect-agent >/dev/null 2>&1; then
+    export GPG_TTY="$(tty 2>/dev/null || true)"
+    gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1 || true
+fi
+
 # Seeing as other scripts will use it might as well export it
 export LINUXTOOLBOXDIR="$HOME/linuxtoolbox"
 

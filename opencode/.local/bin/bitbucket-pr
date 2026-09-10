@@ -1,0 +1,357 @@
+#!/usr/bin/env python3
+"""Create Bitbucket Cloud pull requests using a local pass/GPG credential.
+
+The Bitbucket API token is resolved by pass only while an API request is being
+made. It is never accepted as a command-line argument, written to disk by this
+helper, or included in command output.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode, urlparse
+from urllib.request import Request, urlopen
+
+
+API_ROOT = "https://api.bitbucket.org/2.0"
+CONFIG_PATH = Path(
+    os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+) / "opencode" / "bitbucket-pr.json"
+DEFAULT_PASS_NAME = "bitbucket/opencode"
+
+
+class HelperError(RuntimeError):
+    """A safe, user-facing helper error."""
+
+
+def fail(message: str) -> int:
+    print(f"bitbucket-pr: {message}", file=sys.stderr)
+    return 1
+
+
+def run_git(*args: str) -> str:
+    try:
+        result = subprocess.run(
+            ["git", *args],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise HelperError(f"Git command failed: git {' '.join(args)}") from exc
+    return result.stdout.strip()
+
+
+def load_config() -> dict[str, str]:
+    if not CONFIG_PATH.is_file():
+        raise HelperError(
+            f"configuration is missing; run '{sys.argv[0]} config init' first"
+        )
+    try:
+        data = json.loads(CONFIG_PATH.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HelperError("configuration is unreadable") from exc
+    if not isinstance(data, dict):
+        raise HelperError("configuration must be a JSON object")
+    email = data.get("email")
+    pass_name = data.get("pass_name", DEFAULT_PASS_NAME)
+    if not isinstance(email, str) or not email.strip():
+        raise HelperError("configuration is missing an Atlassian email")
+    if not isinstance(pass_name, str) or not pass_name.strip():
+        raise HelperError("configuration is missing a pass entry name")
+    return {"email": email.strip(), "pass_name": pass_name.strip()}
+
+
+def save_config(email: str, pass_name: str) -> None:
+    if not email.strip():
+        raise HelperError("Atlassian email cannot be empty")
+    if not pass_name.strip() or pass_name.startswith("-"):
+        raise HelperError("pass entry name cannot be empty or start with '-'")
+
+    CONFIG_PATH.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{CONFIG_PATH.name}.",
+        dir=CONFIG_PATH.parent,
+        text=True,
+    )
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w") as stream:
+            json.dump(
+                {"email": email.strip(), "pass_name": pass_name.strip()},
+                stream,
+            )
+            stream.write("\n")
+        os.replace(temporary, CONFIG_PATH)
+    except OSError as exc:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise HelperError("could not save local configuration") from exc
+
+
+def resolve_token(pass_name: str) -> str:
+    if not executable_path("pass"):
+        raise HelperError(
+            "pass is not installed; install the Ubuntu 'pass' package and "
+            "initialize its GPG password store"
+        )
+    try:
+        result = subprocess.run(
+            ["pass", "show", pass_name],
+            check=True,
+            capture_output=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise HelperError(
+            "pass could not resolve the configured token; unlock the GPG key "
+            "and verify the password-store entry"
+        ) from exc
+    token = result.stdout.decode().splitlines()[0].strip()
+    if not token:
+        raise HelperError("pass returned an empty Bitbucket token")
+    return token
+
+
+def executable_path(command: str) -> str | None:
+    """Small local equivalent of shutil.which, also handling absolute paths."""
+    if "/" in command:
+        path = Path(command).expanduser()
+        return str(path) if path.is_file() and os.access(path, os.X_OK) else None
+    for directory in os.environ.get("PATH", "").split(os.pathsep):
+        candidate = Path(directory) / command
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
+
+
+def repository_identity() -> tuple[str, str]:
+    remote = run_git("config", "--get", "remote.origin.url")
+    if remote.startswith("git@"):
+        try:
+            host, path = remote.split(":", 1)
+        except ValueError as exc:
+            raise HelperError("origin is not a supported Bitbucket remote") from exc
+        if host != "git@bitbucket.org":
+            raise HelperError("origin must point to bitbucket.org")
+    else:
+        parsed = urlparse(remote)
+        if parsed.hostname != "bitbucket.org":
+            raise HelperError("origin must point to bitbucket.org")
+        path = parsed.path.lstrip("/")
+
+    path = path.removesuffix("/").removesuffix(".git")
+    parts = path.split("/")
+    if len(parts) != 2 or not all(parts):
+        raise HelperError("could not derive Bitbucket workspace and repository")
+    return parts[0], parts[1]
+
+
+def current_branch() -> str:
+    branch = run_git("symbolic-ref", "--quiet", "--short", "HEAD")
+    if branch in {"main", "master"}:
+        raise HelperError("refusing to create a PR from the default branch")
+    return branch
+
+
+def bearer_auth_header(token: str) -> str:
+    return f"Bearer {token}"
+
+
+def request_json(
+    method: str,
+    url: str,
+    authorization: str,
+    payload: dict[str, Any] | None = None,
+) -> tuple[int, dict[str, Any]]:
+    body = None
+    headers = {
+        "Accept": "application/json",
+        "Authorization": authorization,
+    }
+    if payload is not None:
+        body = json.dumps(payload).encode()
+        headers["Content-Type"] = "application/json"
+    request = Request(url, data=body, headers=headers, method=method)
+    try:
+        with urlopen(request, timeout=20) as response:
+            response_body = response.read()
+            status = response.status
+    except HTTPError as exc:
+        raise HelperError(f"Bitbucket API request failed with HTTP {exc.code}") from exc
+    except (OSError, URLError, TimeoutError) as exc:
+        raise HelperError("Bitbucket API request could not be completed") from exc
+
+    try:
+        decoded = json.loads(response_body)
+    except json.JSONDecodeError as exc:
+        raise HelperError("Bitbucket returned an invalid JSON response") from exc
+    if not isinstance(decoded, dict):
+        raise HelperError("Bitbucket returned an unexpected response")
+    return status, decoded
+
+
+def find_existing_pr(
+    workspace: str,
+    repository: str,
+    branch: str,
+    authorization: str,
+) -> dict[str, Any] | None:
+    query = urlencode({"state": "OPEN", "pagelen": "50"})
+    url = f"{API_ROOT}/repositories/{workspace}/{repository}/pullrequests?{query}"
+    _, response = request_json("GET", url, authorization)
+    values = response.get("values", [])
+    if not isinstance(values, list):
+        return None
+    for pull_request in values:
+        if not isinstance(pull_request, dict):
+            continue
+        source = pull_request.get("source")
+        if not isinstance(source, dict):
+            continue
+        source_branch = source.get("branch")
+        if isinstance(source_branch, dict) and source_branch.get("name") == branch:
+            return pull_request
+    return None
+
+
+def pull_request_result(pull_request: dict[str, Any]) -> str:
+    links = pull_request.get("links", {})
+    html = links.get("html", {}) if isinstance(links, dict) else {}
+    url = html.get("href") if isinstance(html, dict) else None
+    identifier = pull_request.get("id", "unknown")
+    author = pull_request.get("author", {})
+    display_name = author.get("display_name") if isinstance(author, dict) else None
+    author_text = f", author={display_name}" if display_name else ""
+    if not isinstance(url, str) or not url:
+        raise HelperError("Bitbucket response did not include a pull-request URL")
+    return f"PR {identifier}{author_text}: {url}"
+
+
+def create_pull_request(args: argparse.Namespace) -> int:
+    workspace, repository = repository_identity()
+    branch = current_branch()
+    destination = args.destination
+    description = ""
+    if args.description_file:
+        try:
+            description = Path(args.description_file).read_text()
+        except OSError as exc:
+            raise HelperError("could not read the PR description file") from exc
+
+    payload: dict[str, Any] = {
+        "title": args.title,
+        "source": {"branch": {"name": branch}},
+    }
+    if destination:
+        payload["destination"] = {"branch": {"name": destination}}
+    if description:
+        payload["description"] = description
+    if args.draft:
+        payload["draft"] = True
+    if args.close_source_branch:
+        payload["close_source_branch"] = True
+    if args.reviewer_uuid:
+        payload["reviewers"] = [{"uuid": uuid} for uuid in args.reviewer_uuid]
+
+    if args.dry_run:
+        endpoint = f"{API_ROOT}/repositories/{workspace}/{repository}/pullrequests"
+        print(json.dumps({"endpoint": endpoint, "payload": payload}, indent=2))
+        return 0
+
+    config = load_config()
+    token = resolve_token(config["pass_name"])
+    authorization = bearer_auth_header(token)
+    existing = find_existing_pr(workspace, repository, branch, authorization)
+    if existing is not None:
+        print(f"Existing {pull_request_result(existing)}")
+        return 0
+
+    endpoint = f"{API_ROOT}/repositories/{workspace}/{repository}/pullrequests"
+    try:
+        status, response = request_json("POST", endpoint, authorization, payload)
+    except HelperError as exc:
+        # A concurrent invocation may have created the PR after the duplicate
+        # check. Re-read only after a failed create; never blindly retry POST.
+        existing = find_existing_pr(workspace, repository, branch, authorization)
+        if existing is not None:
+            print(f"Existing {pull_request_result(existing)}")
+            return 0
+        raise exc
+    if status != 201:
+        raise HelperError(f"Bitbucket returned unexpected create status {status}")
+    print(pull_request_result(response))
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Create a Bitbucket Cloud PR using a local pass/GPG credential."
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    config = subparsers.add_parser("config", help="configure non-secret metadata")
+    config_subparsers = config.add_subparsers(dest="config_command", required=True)
+    init = config_subparsers.add_parser("init", help="set the email and pass entry name")
+    init.add_argument("--email", required=True, help="Atlassian email address")
+    init.add_argument(
+        "--pass-name",
+        default=DEFAULT_PASS_NAME,
+        help=f"pass entry name (default: {DEFAULT_PASS_NAME})",
+    )
+
+    auth = subparsers.add_parser("auth", help="check the configured pass credential")
+    auth_subparsers = auth.add_subparsers(dest="auth_command", required=True)
+    auth_subparsers.add_parser("check", help="resolve the token without displaying it")
+
+    create = subparsers.add_parser("create", help="create or find an open pull request")
+    create.add_argument("--title", required=True, help="pull-request title")
+    create.add_argument("--description-file", help="UTF-8 file containing the PR description")
+    create.add_argument("--destination", help="destination branch; Bitbucket default if omitted")
+    create.add_argument("--reviewer-uuid", action="append", help="Bitbucket reviewer UUID")
+    create.add_argument("--draft", action="store_true", help="create a draft PR")
+    create.add_argument(
+        "--close-source-branch",
+        action="store_true",
+        help="request source-branch closure after merge",
+    )
+    create.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="show the endpoint and JSON payload without contacting Bitbucket",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    try:
+        if args.command == "config" and args.config_command == "init":
+            save_config(args.email, args.pass_name)
+            print(f"Saved non-secret Bitbucket PR configuration to {CONFIG_PATH}")
+            return 0
+        if args.command == "auth" and args.auth_command == "check":
+            config = load_config()
+            resolve_token(config["pass_name"])
+            print("Bitbucket credential resolved successfully; token value was not displayed")
+            return 0
+        if args.command == "create":
+            return create_pull_request(args)
+    except HelperError as exc:
+        return fail(str(exc))
+    parser.error("unsupported command")
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
