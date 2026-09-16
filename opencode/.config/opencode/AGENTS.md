@@ -47,9 +47,10 @@ and ownership.
   one of its relevant inputs changed.
 - Review happens before final affected-scope checks when review findings could
   change the implementation.
-- `review` owns semantic inspection of the complete staged diff. `build` owns
-  implementation, focused checks, and final executable evidence for the staged
-  scope.
+- `review` owns semantic inspection of the complete staged diff on the initial
+  review and targeted verification of previous blockers and their remediation
+  on re-review. `build` owns implementation, focused checks, remediation
+  summaries, and final executable evidence for the staged scope.
 - A denied, failed, timed-out, unavailable, or skipped required check blocks
   commit and push unless the user explicitly accepts a documented waiver.
 - Shared, CI, Docker, environment, and validation infrastructure changes
@@ -71,13 +72,17 @@ and ownership.
 The normal lifecycle is: `plan` clarifies and plans; one explicit approval of
 the bounded plan authorizes `build` to create a unique repository-local
 worktree, implement the scope, run focused checks, stage the candidate, and
-invoke `review`. If Review reports actionable findings, Build fixes them within
-scope and requests re-review when the remediation materially changes reviewed
-behavior or is high-risk. After Review passes, Build runs the final applicable
-affected-scope checks, then commits and pushes the feature branch without asking
-for another confirmation. Only after those checks pass may Build call
-`bitbucket-pr create`; it must not create a PR earlier in the lifecycle. Build
-must report the changed files, exact checks and results, branch, commit SHA,
+invoke `review`. If Review returns BLOCK, Build fixes only the BLOCKING findings within 
+scope. For each remediation re-review, Build passes the previous blocking finding IDs
+and findings, a concise remediation summary for each finding, the files or
+functions changed during remediation, and any affected checks already run.
+Re-review is targeted verification of those findings and the remediation delta,
+not a fresh review of the entire candidate, unless the remediation substantially
+changes the design or crosses a high-risk boundary. After Review passes, Build runs 
+the final applicable affected-scope checks, then commits and pushes the feature 
+branch without asking for another confirmation. Only after those checks pass may 
+Build call `bitbucket-pr create`; it must not create a PR earlier in the lifecycle. 
+Build must report the changed files, exact checks and results, branch, commit SHA,
 push result, pull-request result, and warnings.
 
 Approval is required only for ambiguous requirements, material scope changes,

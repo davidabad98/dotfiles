@@ -47,9 +47,6 @@ checks.
 
 The `/quick` request is authorization to implement an eligible fast-path change.
 
-Read the applicable `AGENTS.md` files and only the files directly required for
-the change.
-
 Load at most one task-specific skill when it provides instructions materially 
 necessary for the change.
 
