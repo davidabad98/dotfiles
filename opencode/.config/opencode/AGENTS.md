@@ -6,84 +6,56 @@ and ownership.
 
 ## Operating Rules
 
-- Use the installed skills under the user's global skills directory. Load only
+* Use the installed skills under the user's global skills directory. Load only
   skills relevant to the current phase and task.
-- For non-trivial work, begin with the `plan` agent and obtain explicit user
+* For non-trivial work, begin with the `plan` agent and obtain explicit user
   approval before editing.
-- Read the repository's `AGENTS.md`, README, relevant tests, and current build
-  commands before making changes.
-- Never claim a test, build, review, commit, push, or PR happened without
+* Follow all applicable repository and nested `AGENTS.md` instructions. Read the
+  README, relevant tests, and current build commands before making changes.
+* Never claim a test, build, review, commit, push, or PR happened without
   command output or an explicit external result.
-- Never read, print, copy, or commit secrets, real `.env` files, private keys,
+* Never read, print, copy, or commit secrets, real `.env` files, private keys,
   access tokens, or credential-manager contents.
-- Use the current repository's normal Git credentials. Do not invent a
+* Use the current repository's normal Git credentials. Do not invent a
   credential mechanism or add credentials to project configuration.
-- Agents may create a pull request after Review and final checks pass by using
+* Agents may create a pull request after Review and final checks pass by using
   the local `bitbucket-pr create` helper. Agents must not approve, decline, or
   merge pull requests or change repository administration.
-- Keep commits focused and report intentional scope and known limitations.
+* Keep commits focused and report intentional scope and known limitations.
 
 ## Fast Path
 
-- `/quick` is an explicit fast lane for small, clear, localized, low-risk fixes.
-- A Quick Fix may proceed without a separate plan approval only when the
-  requested result is unambiguous, the change is localized, behavior is obvious,
-  and deterministic targeted validation exists.
-- Quick Fix must stop before editing and route to `/plan` → `/build` for
-  ambiguity, broad refactors, dependencies or lockfiles, authentication or
-  authorization, credentials or secrets, tenant or sensitive-data boundaries,
-  database migrations, public API changes, production deployment behavior,
-  cross-service architecture, or repository-wide tooling/validation changes.
-- Quick Fix uses a dedicated worktree when the active checkout is shared, runs
-  only affected-scope checks, stages only intended files, and performs a staged
-  diff/self-check. It does not invoke the independent Review agent.
-- The default agent remains `plan`; ordinary requests therefore retain the
+* `/quick` is an explicit fast lane for small, clear, localized, low-risk fixes.
+* Use Quick Fix only when the requested result is unambiguous, the change is
+  localized, behavior is obvious, and deterministic targeted validation exists.
+  Otherwise route to `/plan` → `/build`.
+* The default agent remains `plan`; ordinary requests therefore retain the
   normal planning gate unless `/quick` is explicitly selected.
 
 ## Efficient Validation
 
-- Validation is incremental. During implementation, run focused checks for the
+* Validation is incremental. During implementation, run focused checks for the
   affected files or component; do not repeat a successful expensive check unless
   one of its relevant inputs changed.
-- Review happens before final affected-scope checks when review findings could
-  change the implementation.
-- `review` owns semantic inspection of the complete staged diff on the initial
-  review and targeted verification of previous blockers and their remediation
-  on re-review. `build` owns implementation, focused checks, remediation
-  summaries, and final executable evidence for the staged scope.
-- A denied, failed, timed-out, unavailable, or skipped required check blocks
+* A denied, failed, timed-out, unavailable, or skipped required check blocks
   commit and push unless the user explicitly accepts a documented waiver.
-- Shared, CI, Docker, environment, and validation infrastructure changes
+* Shared, CI, Docker, environment, and validation infrastructure changes
   require validation of the affected contract. Broader verification is required
   only when the change can alter multiple components, deployment/runtime
   behavior, credentials, production state, or repository-wide semantics, and
   whenever project rules say so.
-- A commit-time hook is a backstop, not a substitute for final evidence. If an
-  auto-fixing hook changes files, inspect and stage the change, rerun affected
-  checks, and re-review
-  high-risk or production-code deltas. Never use `git commit --no-verify` to
-  save time.
-- Review shell access is not a sandbox. It must never request mutation-capable
-  commands. `--auto` must not be used for commands that retain
-  approval-gated validation or external effects.
+* A commit-time hook is a backstop, not a substitute for final evidence. If an
+  auto-fixing hook changes files, inspect and stage the change and rerun affected
+  checks. Never use `git commit --no-verify` to save time.
 
 ## Lifecycle
 
 The normal lifecycle is: `plan` clarifies and plans; one explicit approval of
-the bounded plan authorizes `build` to create a unique repository-local
-worktree, implement the scope, run focused checks, stage the candidate, and
-invoke `review`. If Review returns BLOCK, Build fixes only the BLOCKING findings within 
-scope. For each remediation re-review, Build passes the previous blocking finding IDs
-and findings, a concise remediation summary for each finding, the files or
-functions changed during remediation, and any affected checks already run.
-Re-review is targeted verification of those findings and the remediation delta,
-not a fresh review of the entire candidate, unless the remediation substantially
-changes the design or crosses a high-risk boundary. After Review passes, Build runs 
-the final applicable affected-scope checks, then commits and pushes the feature 
-branch without asking for another confirmation. Only after those checks pass may 
-Build call `bitbucket-pr create`; it must not create a PR earlier in the lifecycle. 
-Build must report the changed files, exact checks and results, branch, commit SHA,
-push result, pull-request result, and warnings.
+the bounded plan authorizes `build` to implement the scope in an isolated
+repository-local worktree, invoke independent `review`, run final applicable
+checks, commit and push the feature branch, and create the pull request.
+Detailed implementation, review, remediation, synchronization, and delivery
+rules belong to their respective agents.
 
 Approval is required only for ambiguous requirements, material scope changes,
 credentials or secrets, sensitive external effects, destructive operations,

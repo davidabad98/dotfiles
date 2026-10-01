@@ -14,6 +14,9 @@ permission:
     "git log*": allow
     "git rev-parse*": allow
     "git ls-files*": allow
+    "sed *": allow
+    "grep *": allow
+    "head *": allow
     "git add*": deny
     "git commit*": deny
     "git push*": deny
