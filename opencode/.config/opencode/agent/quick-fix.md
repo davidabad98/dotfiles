@@ -23,15 +23,15 @@ permission:
     "git commit*": allow
     "git push*": deny
     "git push origin agent/*": allow
-    "git merge*": deny
+    "git merge*": ask
     "git reset*": deny
-    "git restore*": deny
-    "git checkout*": deny
-    "git switch*": deny
-    "git stash*": deny
-    "git rebase*": deny
-    "git tag*": deny
-    "git clean*": deny
+    "git restore*": ask
+    "git checkout*": ask
+    "git switch*": ask
+    "git stash*": ask
+    "git rebase*": ask
+    "git tag*": ask
+    "git clean*": ask
     "rm *": deny
     "mv *": deny
     "cp *": deny
