@@ -26,6 +26,7 @@ CONFIG_PATH = Path(
     os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
 ) / "opencode" / "bitbucket-pr.json"
 DEFAULT_PASS_NAME = "bitbucket/opencode"
+PASS_TIMEOUT_SECONDS = 10
 
 
 class HelperError(RuntimeError):
@@ -99,24 +100,54 @@ def save_config(email: str, pass_name: str) -> None:
         raise HelperError("could not save local configuration") from exc
 
 
-def resolve_token(pass_name: str) -> str:
+def resolve_token(pass_name: str, *, non_interactive: bool = False) -> str:
     if not executable_path("pass"):
         raise HelperError(
             "pass is not installed; install the Ubuntu 'pass' package and "
             "initialize its GPG password store"
         )
+    run_options: dict[str, Any] = {"check": True, "capture_output": True}
+    if non_interactive:
+        environment = os.environ.copy()
+        gpg_options = environment.get("PASSWORD_STORE_GPG_OPTS", "").strip()
+        environment["PASSWORD_STORE_GPG_OPTS"] = " ".join(
+            option
+            for option in (
+                gpg_options,
+                "--batch",
+                "--no-tty",
+                "--pinentry-mode error",
+            )
+            if option
+        )
+        run_options.update(
+            stdin=subprocess.DEVNULL,
+            timeout=PASS_TIMEOUT_SECONDS,
+            env=environment,
+        )
     try:
         result = subprocess.run(
             ["pass", "show", pass_name],
-            check=True,
-            capture_output=True,
+            **run_options,
         )
     except (OSError, subprocess.CalledProcessError) as exc:
+        if non_interactive:
+            raise HelperError(
+                "pass could not resolve the configured token without prompting; "
+                "run 'bitbucket-pr auth check' in an interactive terminal to "
+                "unlock the GPG key and verify the password-store entry"
+            ) from exc
         raise HelperError(
             "pass could not resolve the configured token; unlock the GPG key "
             "and verify the password-store entry"
         ) from exc
-    token = result.stdout.decode().splitlines()[0].strip()
+    except subprocess.TimeoutExpired as exc:
+        raise HelperError(
+            "pass did not finish resolving the configured token; no interactive "
+            "prompt was opened"
+        ) from exc
+    token_lines = result.stdout.decode().splitlines()
+    token = token_lines[0].strip() if token_lines else ""
     if not token:
         raise HelperError("pass returned an empty Bitbucket token")
     return token
@@ -269,7 +300,7 @@ def create_pull_request(args: argparse.Namespace) -> int:
         return 0
 
     config = load_config()
-    token = resolve_token(config["pass_name"])
+    token = resolve_token(config["pass_name"], non_interactive=True)
     authorization = bearer_auth_header(token)
     existing = find_existing_pr(workspace, repository, branch, authorization)
     if existing is not None:
@@ -311,7 +342,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     auth = subparsers.add_parser("auth", help="check the configured pass credential")
     auth_subparsers = auth.add_subparsers(dest="auth_command", required=True)
-    auth_subparsers.add_parser("check", help="resolve the token without displaying it")
+    check = auth_subparsers.add_parser(
+        "check", help="resolve the token without displaying it"
+    )
+    check.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help="fail without prompting if the GPG key is locked",
+    )
 
     create = subparsers.add_parser("create", help="create or find an open pull request")
     create.add_argument("--title", required=True, help="pull-request title")
@@ -342,7 +380,9 @@ def main() -> int:
             return 0
         if args.command == "auth" and args.auth_command == "check":
             config = load_config()
-            resolve_token(config["pass_name"])
+            resolve_token(
+                config["pass_name"], non_interactive=args.non_interactive
+            )
             print("Bitbucket credential resolved successfully; token value was not displayed")
             return 0
         if args.command == "create":
