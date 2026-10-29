@@ -21,6 +21,11 @@ and ownership.
 * Agents may create a pull request after Review and final checks pass by using
   the local `bitbucket-pr create` helper. Agents must not approve, decline, or
   merge pull requests or change repository administration.
+* Credential preflights from OpenCode must use
+  `bitbucket-pr auth check --non-interactive`. If it fails, stop and tell the
+  user to run `bitbucket-pr auth check` in an interactive terminal; never open
+  or work around a pinentry prompt from OpenCode. `bitbucket-pr create` must
+  also fail without prompting if its GPG credential is unavailable.
 * Keep commits focused and report intentional scope and known limitations.
 
 ## Fast Path

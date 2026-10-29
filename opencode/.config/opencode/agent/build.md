@@ -9,6 +9,7 @@ permission:
   bash:
     "bitbucket-pr auth*": deny
     "bitbucket-pr config*": deny
+    "bitbucket-pr auth check --non-interactive": allow
     "bitbucket-pr create*": allow
 ---
 
@@ -149,6 +150,14 @@ the current normal Git credentials and create the Bitbucket pull request with
 decline, merge, change repository settings, or access production data. If the local
 pass/GPG-backed helper is unavailable, report the setup failure without requesting
 or printing the token.
+
+Immediately before creating the PR, run
+`bitbucket-pr auth check --non-interactive`. If it fails, do not run `create`;
+report the failure and tell the user to run `bitbucket-pr auth check` in their
+interactive terminal, then resume delivery. Never run the interactive check from
+OpenCode or attempt to handle a pinentry prompt. `bitbucket-pr create` also resolves
+credentials non-interactively and must fail safely if the GPG cache expires after
+the preflight.
 
 Final delivery report:
 
