@@ -18,6 +18,40 @@ bitbucket_pr = module_from_spec(SPEC)
 LOADER.exec_module(bitbucket_pr)
 
 
+class RepositoryIdentityTests(unittest.TestCase):
+    def test_accepts_both_bitbucket_hosts_and_remote_formats(self):
+        remotes = (
+            "git@bitbucket.org:workspace/repo.git",
+            "git@ssh.bitbucket.org:workspace/repo.git",
+            "ssh://git@bitbucket.org/workspace/repo.git",
+            "ssh://git@ssh.bitbucket.org/workspace/repo.git",
+            "https://bitbucket.org/workspace/repo.git",
+            "https://ssh.bitbucket.org/workspace/repo.git",
+        )
+
+        for remote in remotes:
+            with self.subTest(remote=remote):
+                with mock.patch.object(bitbucket_pr, "run_git", return_value=remote):
+                    self.assertEqual(
+                        bitbucket_pr.repository_identity(), ("workspace", "repo")
+                    )
+
+    def test_rejects_remote_hosts_outside_bitbucket(self):
+        remotes = (
+            "git@github.com:workspace/repo.git",
+            "ssh://git@github.com/workspace/repo.git",
+            "https://github.com/workspace/repo.git",
+        )
+
+        for remote in remotes:
+            with self.subTest(remote=remote):
+                with mock.patch.object(bitbucket_pr, "run_git", return_value=remote):
+                    with self.assertRaisesRegex(
+                        bitbucket_pr.HelperError, "origin must point to"
+                    ):
+                        bitbucket_pr.repository_identity()
+
+
 class ResolveTokenTests(unittest.TestCase):
     @mock.patch.object(bitbucket_pr, "executable_path", return_value="/usr/bin/pass")
     @mock.patch.object(bitbucket_pr.subprocess, "run")

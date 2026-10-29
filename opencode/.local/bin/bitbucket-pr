@@ -22,6 +22,7 @@ from urllib.request import Request, urlopen
 
 
 API_ROOT = "https://api.bitbucket.org/2.0"
+BITBUCKET_HOSTS = frozenset({"bitbucket.org", "ssh.bitbucket.org"})
 CONFIG_PATH = Path(
     os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
 ) / "opencode" / "bitbucket-pr.json"
@@ -172,13 +173,14 @@ def repository_identity() -> tuple[str, str]:
             host, path = remote.split(":", 1)
         except ValueError as exc:
             raise HelperError("origin is not a supported Bitbucket remote") from exc
-        if host != "git@bitbucket.org":
-            raise HelperError("origin must point to bitbucket.org")
+        host = host.removeprefix("git@")
     else:
         parsed = urlparse(remote)
-        if parsed.hostname != "bitbucket.org":
-            raise HelperError("origin must point to bitbucket.org")
+        host = parsed.hostname
         path = parsed.path.lstrip("/")
+
+    if host not in BITBUCKET_HOSTS:
+        raise HelperError("origin must point to bitbucket.org or ssh.bitbucket.org")
 
     path = path.removesuffix("/").removesuffix(".git")
     parts = path.split("/")
